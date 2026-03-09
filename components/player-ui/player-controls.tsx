@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import {
+	ActivityIndicator,
 	Image,
 	PanResponder,
 	Text,
@@ -17,6 +18,7 @@ export function PlayerControls() {
 	const {
 		currentTrack,
 		isPlaying,
+		isLoading,
 		position,
 		duration,
 		play,
@@ -32,7 +34,6 @@ export function PlayerControls() {
 	const [isScrubbing, setIsScrubbing] = useState(false);
 	const [scrubRatio, setScrubRatio] = useState(0);
 
-	// Refs so PanResponder callbacks always see current values
 	const barWidthRef = useRef(0);
 	const durationRef = useRef(duration);
 	const seekRef = useRef(seek);
@@ -83,7 +84,6 @@ export function PlayerControls() {
 
 	return (
 		<View className="border-t border-player-border bg-player-surface">
-			{/* Scrubber */}
 			<View
 				onLayout={(e) => {
 					const w = e.nativeEvent.layout.width;
@@ -93,30 +93,20 @@ export function PlayerControls() {
 				style={{ height: 20, justifyContent: "center" }}
 				{...panResponder.panHandlers}
 			>
-				{/* Track + fill */}
-				<View
-					style={{
-						height: 3,
-						backgroundColor: "rgba(128,128,128,0.2)",
-						borderRadius: 2,
-						overflow: "hidden",
-					}}
-				>
+				<View className="h-[3px] overflow-hidden rounded-[2px] bg-gray-500/20">
 					<View
+						className="h-full rounded-[2px]"
 						style={{
-							height: "100%",
 							width: `${displayProgress * 100}%`,
 							backgroundColor: tintColor,
-							borderRadius: 2,
 						}}
 					/>
 				</View>
 
-				{/* Draggable dot */}
 				{barWidth > 0 && (
 					<View
+						className="absolute"
 						style={{
-							position: "absolute",
 							width: dotSize,
 							height: dotSize,
 							borderRadius: dotSize / 2,
@@ -160,13 +150,18 @@ export function PlayerControls() {
 
 					<TouchableOpacity
 						onPress={isPlaying ? pause : play}
+						disabled={isLoading}
 						className="h-9 w-9 items-center justify-center rounded-full bg-tint"
 					>
-						<IconSymbol
-							name={isPlaying ? "pause.fill" : "play.fill"}
-							size={20}
-							color={iconColor}
-						/>
+						{isLoading ? (
+							<ActivityIndicator size="small" color={iconColor} />
+						) : (
+							<IconSymbol
+								name={isPlaying ? "pause.fill" : "play.fill"}
+								size={20}
+								color={iconColor}
+							/>
+						)}
 					</TouchableOpacity>
 
 					<TouchableOpacity
