@@ -35,10 +35,13 @@ export interface SearchPlaylist {
 }
 
 export interface SearchPage<T> {
-	items: T[];
-	limit: number;
-	offset: number;
-	totalNumberOfItems: number;
+	version: string;
+	data: {
+		items: T[];
+		limit: number;
+		offset: number;
+		totalNumberOfItems: number;
+	};
 }
 
 export interface SearchOptions {
