@@ -44,11 +44,12 @@ export function markFailed(baseUrl: string): void {
 }
 
 export function pickInstance(): string {
-	const now = Date.now();
-	const available = cachedInstances.filter(
-		(url) => !cooldowns.has(url) || cooldowns.get(url)! < now,
-	);
+	return "https://triton.squid.wtf";
+	// const now = Date.now();
+	// const available = cachedInstances.filter(
+	// 	(url) => !cooldowns.has(url) || cooldowns.get(url)! < now,
+	// );
 
-	const pool = available.length > 0 ? available : cachedInstances;
-	return pool[Math.floor(Math.random() * pool.length)];
+	// const pool = available.length > 0 ? available : cachedInstances;
+	// return pool[Math.floor(Math.random() * pool.length)];
 }

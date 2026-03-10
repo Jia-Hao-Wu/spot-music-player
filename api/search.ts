@@ -1,6 +1,10 @@
 import { apiGet } from "./client";
 
 // Response shapes
+export interface SearchResponse<T> {
+	version: string;
+	data: T;
+}
 
 export interface SearchArtist {
 	id: string;
@@ -8,12 +12,17 @@ export interface SearchArtist {
 	picture: string | null;
 }
 
+export interface SearchCreator {
+	id: number,
+	name: string,
+}
+
 export interface SearchAlbum {
 	id: string;
 	title: string;
 	cover: string | null;
 	releaseDate?: string;
-	artist: SearchArtist;
+	artists: SearchArtist[];
 }
 
 export interface SearchTrack {
@@ -27,21 +36,28 @@ export interface SearchTrack {
 }
 
 export interface SearchPlaylist {
-	id: string;
 	uuid: string;
 	title: string;
+	creator: SearchCreator;
 	numberOfTracks: number;
 	squareImage: string | null;
 }
 
 export interface SearchPage<T> {
-	version: string;
-	data: {
-		items: T[];
-		limit: number;
-		offset: number;
-		totalNumberOfItems: number;
-	};
+	items: T[];
+	limit: number;
+	offset: number;
+	totalNumberOfItems: number;
+}
+
+export interface SearchItems {
+	artists: SearchPage<SearchArtist>;
+	albums: SearchPage<SearchAlbum>;
+	tracks: SearchPage<SearchTrack>;
+	playlists: SearchPage<SearchPlaylist>;
+
+	videos: SearchPage<unknown>;
+	genres: SearchPage<unknown>;
 }
 
 export interface SearchOptions {
@@ -50,7 +66,6 @@ export interface SearchOptions {
 }
 
 // Helpers
-
 function buildPath(
 	param: string,
 	query: string,
@@ -65,12 +80,11 @@ function buildPath(
 }
 
 // Public API
-
 export function searchTracks(
 	query: string,
 	opts: SearchOptions = {},
 	signal?: AbortSignal,
-): Promise<SearchPage<SearchTrack>> {
+): Promise<SearchResponse<SearchPage<SearchTrack>>> {
 	return apiGet(buildPath("s", query, opts), signal);
 }
 
@@ -78,7 +92,7 @@ export function searchAlbums(
 	query: string,
 	opts: SearchOptions = {},
 	signal?: AbortSignal,
-): Promise<SearchPage<SearchAlbum>> {
+): Promise<SearchResponse<SearchItems>> {
 	return apiGet(buildPath("al", query, opts), signal);
 }
 
@@ -86,7 +100,7 @@ export function searchArtists(
 	query: string,
 	opts: SearchOptions = {},
 	signal?: AbortSignal,
-): Promise<SearchPage<SearchArtist>> {
+): Promise<SearchResponse<SearchItems>> {
 	return apiGet(buildPath("a", query, opts), signal);
 }
 
@@ -94,6 +108,6 @@ export function searchPlaylists(
 	query: string,
 	opts: SearchOptions = {},
 	signal?: AbortSignal,
-): Promise<SearchPage<SearchPlaylist>> {
+): Promise<SearchResponse<SearchItems>> {
 	return apiGet(buildPath("p", query, opts), signal);
 }

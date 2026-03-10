@@ -1,17 +1,20 @@
-import type { SearchTrack } from "@/api";
+import { useSearchTracks } from "@/hooks/use-search";
 
 type TracksProps = {
-	results?: SearchTrack[];
-	isLoading?: boolean;
+	query: string;
 };
 
-export function Tracks({ results, isLoading }: TracksProps) {
-	if (isLoading) return <div className="text-muted text-sm">Loading...</div>;
-	if (!results?.length) return null;
+export function Tracks({ query }: TracksProps) {
+
+	const { data, isLoading } = useSearchTracks(query);
+
+	if(isLoading || !data) {
+		return <div>Loading...</div>;
+	}
 
 	return (
 		<div className="flex flex-col gap-2">
-			{results.map((track) => (
+			{data.items.map((track) => (
 				<div key={track.id} className="flex items-center gap-3 py-1">
 					<div className="flex-1 min-w-0">
 						<div className="text-sm text-foreground truncate">{track.title}</div>
