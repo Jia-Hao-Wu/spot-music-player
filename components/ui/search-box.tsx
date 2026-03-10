@@ -15,7 +15,7 @@ export function Searchbox({ ...props }: React.ComponentPropsWithoutRef<"input">)
 				{...props}
 			/>
 			<IconSymbol
-				// className="absolute right-3 top-1/2 transform -translate-y-1/2 opacity-25"
+				className="absolute right-3 top-1/2 transform -translate-y-1/2 opacity-25"
 				size={28}
 				name="magnifyingglass"
 				color={iconColor}
