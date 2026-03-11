@@ -24,6 +24,8 @@ export function PlayerControls() {
 		next,
 		previous,
 		seek,
+		currentIndex,
+		queue
 	} = usePlayer();
 
 	const [barWidth, setBarWidth] = useState(0);
@@ -86,7 +88,6 @@ export function PlayerControls() {
 					setBarWidth(w);
 					barWidthRef.current = w;
 				}}
-				style={{ height: 20, justifyContent: "center" }}
 				{...panResponder.panHandlers}
 			>
 				<View className="h-[3px] overflow-hidden rounded-[2px] bg-foreground/20">
@@ -104,7 +105,7 @@ export function PlayerControls() {
 							height: dotSize,
 							borderRadius: dotSize / 2,
 							left: displayProgress * barWidth - dotSize / 2,
-							top: (20 - dotSize) / 2,
+							top: -5,
 						}}
 					/>
 				)}
@@ -134,10 +135,11 @@ export function PlayerControls() {
 
 				<View className="flex-row items-center gap-3">
 					<TouchableOpacity
+						disabled={currentIndex === 0}
 						onPress={previous}
 						hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
 					>
-						<IconSymbol name="backward.fill" size={18} color="var(--color-foreground)" />
+						<IconSymbol name="backward.fill" size={18} color={currentIndex === 0 ? "var(--color-muted)" : "var(--color-foreground)"} />
 					</TouchableOpacity>
 
 					<TouchableOpacity
@@ -157,10 +159,11 @@ export function PlayerControls() {
 					</TouchableOpacity>
 
 					<TouchableOpacity
+						disabled={currentIndex === queue.length - 1}
 						onPress={next}
 						hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
 					>
-						<IconSymbol name="forward.fill" size={18} color="var(--color-foreground)" />
+						<IconSymbol name="forward.fill" size={18} color={currentIndex === queue.length - 1 ? "var(--color-muted)" : "var(--color-foreground)"} />
 					</TouchableOpacity>
 				</View>
 			</View>

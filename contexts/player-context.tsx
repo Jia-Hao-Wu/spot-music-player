@@ -17,6 +17,7 @@ import { getTrackStream } from "@/api";
 import { Track } from "@/constants/tracks";
 
 interface PlayerContextType {
+	currentIndex: number;
 	currentTrack: Track | null;
 	isPlaying: boolean;
 	isLoading: boolean;
@@ -39,6 +40,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 	const [queue, setQueue] = useState<Track[]>([]);
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [isLoading, setIsLoading] = useState(false);
+	const [wantsToPlay, setWantsToPlay] = useState(false);
 
 	const player = useAudioPlayer(null);
 	const status = useAudioPlayerStatus(player);
@@ -61,13 +63,50 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 		});
 	}, []);
 
-	const enQueue = (track: Track) => {
+	// Deferred play: wait for player to be loaded before playing
+	useEffect(() => {
+		if (wantsToPlay && status.isLoaded && !status.playing) {
+			player.play();
+			setWantsToPlay(false);
+		}
+	}, [wantsToPlay, status.isLoaded, status.playing, player, queue]);
+
+	const enQueue = async (track: Track) => {
 		setQueue((prev) => [...prev, track]);
+
+		if(queue.length === 0) {
+			let streamUri = track.uri;
+
+			if (!streamUri && track.tidalId) {
+				setIsLoading(true);
+				try {
+					streamUri = await getTrackStream(track.tidalId);
+				} catch (e) {
+					setIsLoading(false);
+					return;
+				}
+			}
+
+			if (!streamUri) {
+				setIsLoading(false);
+				return;
+			}
+
+			try {
+				player.replace({ uri: streamUri });
+				setWantsToPlay(true);
+			} catch (e) {
+				console.warn("Failed to load audio:", e);
+			} finally {
+				setIsLoading(false);
+			}
+		}
 	};
 
 	const loadSoundAt = useCallback(
 		async (index: number, autoPlay = false) => {
 			const track = queue[index];
+
 			let streamUri = track.uri;
 
 			if (!streamUri && track.tidalId) {
@@ -88,7 +127,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 			try {
 				player.replace({ uri: streamUri });
 				if (autoPlay) {
-					player.play();
+					setWantsToPlay(true);
 				}
 			} catch (e) {
 				console.warn("Failed to load audio:", e);
@@ -122,10 +161,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 	}, []);
 
 	const play = useCallback(async () => {
-		player.play();
-	}, [player]);
+		if (status.isLoaded) {
+			player.play();
+		} else {
+			setWantsToPlay(true);
+		}
+	}, [player, queue, status.isLoaded]);
 
 	const pause = useCallback(async () => {
+		setWantsToPlay(false);
 		player.pause();
 	}, [player]);
 
@@ -168,6 +212,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 	return (
 		<PlayerContext.Provider
 			value={{
+				currentIndex,
 				currentTrack: queue[currentIndex] ?? null,
 				isPlaying: status.playing,
 				isLoading,

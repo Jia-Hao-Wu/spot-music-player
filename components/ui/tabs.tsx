@@ -14,7 +14,7 @@ export function Tabs({ tabs, defaultIndex = 0 }: TabsProps) {
 	const [activeIndex, setActiveIndex] = useState(defaultIndex);
 
 	return (
-		<div className="flex flex-col h-full">
+		<div className="flex flex-col">
 			<div className="flex gap-1 border-b border-foreground/10">
 				{tabs.map((tab, index) => (
 					<button
@@ -30,7 +30,7 @@ export function Tabs({ tabs, defaultIndex = 0 }: TabsProps) {
 					</button>
 				))}
 			</div>
-			<div className="flex-1 pt-4 overflow-auto">{tabs[activeIndex]?.content}</div>
+			<div className="flex-1 pt-4 overflow-scroll h-full">{tabs[activeIndex]?.content}</div>
 		</div>
 	);
 }

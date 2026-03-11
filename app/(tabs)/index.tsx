@@ -18,28 +18,32 @@ export default function HomeScreen() {
 	}, 300);
 
 	return (
-		<ThemedView className="p-4 h-full flex flex-col gap-4">
-			<Searchbox id="search" name="search" onChange={handleSearch} />
-			{query && <Tabs
-				tabs={[
-					{
-						label: "Tracks",
-						content: <Tracks query={query} />
-					},
-					{ 
-						label: "Playlists", 
-						content: <Playlists query={query} /> 
-					},
-					{ 
-						label: "Artists", 
-						content: <Artists query={query} /> 
-					},
-					{ 
-						label: "Albums", 
-						content: <Albums query={query} /> 
-					},
-				]}
-			/>}
-		</ThemedView>
+		<div className="bg-background">
+			<div className="p-4">
+				<Searchbox id="search" name="search" onChange={handleSearch} />
+			</div>
+			{query && (
+				<Tabs
+					tabs={[
+						{
+							label: "Tracks",
+							content: <Tracks query={query} />,
+						},
+						{
+							label: "Playlists",
+							content: <Playlists query={query} />,
+						},
+						{
+							label: "Artists",
+							content: <Artists query={query} />,
+						},
+						{
+							label: "Albums",
+							content: <Albums query={query} />,
+						},
+					]}
+				/>
+			)}
+		</div>
 	);
 }

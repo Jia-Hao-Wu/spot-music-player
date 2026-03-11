@@ -77,8 +77,6 @@ export async function getTrackStream(
 
 		const url = resolveStreamUrl(data.manifest ?? "");
 
-		console.log(url);
-
 		if (url) return url;
 	}
 

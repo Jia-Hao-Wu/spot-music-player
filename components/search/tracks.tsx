@@ -10,7 +10,7 @@ type TracksProps = {
 
 export function Tracks({ query }: TracksProps) {
 	const { data, isLoading } = useSearchTracks(query);
-	const { enQueue } = usePlayer();
+	const { currentTrack, isPlaying, enQueue } = usePlayer();
 
 	if (isLoading || !data) {
 		return <div>Loading...</div>;
@@ -36,11 +36,18 @@ export function Tracks({ query }: TracksProps) {
 					}}
 				>
 					<div className="flex items-center flex-1 overflow-visible">
-						<span className="flex rounded-md w-12 h-12 overflow-visible mr-5">
+						<span className="flex rounded-md w-12 h-12 overflow-visible mr-5 relative">
 							<img
 								className="rounded-md transition-transform duration-200 group-hover:scale-110 group-hover:z-10"
 								src={artworkUrl(track.album.cover, ARTWORK_SIZES.thumbnail)}
 							/>
+							<div className="bg-transparent group-hover:bg-black/30 transition-colors z-20 absolute h-full w-full flex items-center justify-center">
+								<IconSymbol
+									className="m-auto"
+									name={currentTrack?.id === track.id && isPlaying ? "pause.fill" : "play.fill"}
+									color="var(--color-foreground)"
+								/>
+							</div>
 						</span>
 						<div className="min-w-0">
 							<div className="text-sm text-foreground truncate">{track.title}</div>
@@ -52,11 +59,6 @@ export function Tracks({ query }: TracksProps) {
 							{Math.floor(track.duration / 60)}:
 							{(track.duration % 60).toString().padStart(2, "0")}
 						</div>
-						<IconSymbol
-							// name={isPlaying ? "pause.fill" : "play.fill"}
-							name="play.fill"
-							color="var(--color-foreground)"
-						/>
 					</div>
 				</div>
 			))}
