@@ -10,6 +10,7 @@ import React, {
 
 import { getTrackStream } from "@/api";
 import { Track } from "@/constants/tracks";
+import { useQueue } from "@/hooks/use-queue";
 
 interface PlayerContextType {
 	currentTrack: Track | null;
@@ -19,6 +20,7 @@ interface PlayerContextType {
 	duration: number;
 	queue: Track[];
 	setQueue: (tracks: Track[]) => void;
+	enQueue: (track: Track) => void;
 	play: () => Promise<void>;
 	pause: () => Promise<void>;
 	next: () => Promise<void>;
@@ -66,6 +68,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 			soundRef.current?.unloadAsync();
 		};
 	}, []);
+
+	const enQueue = (track: Track) => {
+		setQueue((prev) => [...prev, track]);
+	};
 
 	const onPlaybackStatusUpdate = useCallback(
 		(status: AVPlaybackStatus) => {
@@ -190,6 +196,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 				previous,
 				seek,
 				loadTrack,
+				enQueue
 			}}
 		>
 			{children}
