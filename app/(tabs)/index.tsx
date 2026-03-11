@@ -18,7 +18,7 @@ export default function HomeScreen() {
 	}, 300);
 
 	return (
-		<div className="bg-background">
+		<div className="flex flex-1 flex-col overflow-hidden bg-background">
 			<div className="p-4">
 				<Searchbox id="search" name="search" onChange={handleSearch} />
 			</div>

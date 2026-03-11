@@ -42,6 +42,8 @@ export function PlayerControls() {
 	const displayProgress = isScrubbing ? scrubRatio : progress;
 	const displayPosition = isScrubbing ? scrubRatio * duration : position;
 
+	const startRatioRef = useRef(0);
+
 	const panResponder = useRef(
 		PanResponder.create({
 			onStartShouldSetPanResponder: () => true,
@@ -49,17 +51,18 @@ export function PlayerControls() {
 			onPanResponderGrant: (evt) => {
 				if (!barWidthRef.current) return;
 				const ratio = MinMax(0, 1, evt.nativeEvent.locationX / barWidthRef.current);
+				startRatioRef.current = ratio;
 				setIsScrubbing(true);
 				setScrubRatio(ratio);
 			},
-			onPanResponderMove: (evt) => {
+			onPanResponderMove: (_evt, gestureState) => {
 				if (!barWidthRef.current) return;
-				const ratio = MinMax(0, 1, evt.nativeEvent.locationX / barWidthRef.current);
+				const ratio = MinMax(0, 1, startRatioRef.current + gestureState.dx / barWidthRef.current);
 				setScrubRatio(ratio);
 			},
-			onPanResponderRelease: (evt) => {
+			onPanResponderRelease: (_evt, gestureState) => {
 				if (!barWidthRef.current || !durationRef.current) return;
-				const ratio = MinMax(0, 1, evt.nativeEvent.locationX / barWidthRef.current);
+				const ratio = MinMax(0, 1, startRatioRef.current + gestureState.dx / barWidthRef.current);
 				seekRef.current(ratio * durationRef.current);
 				setScrubRatio(ratio);
 				setIsScrubbing(false);
@@ -105,7 +108,7 @@ export function PlayerControls() {
 							height: dotSize,
 							borderRadius: dotSize / 2,
 							left: displayProgress * barWidth - dotSize / 2,
-							top: -5,
+							top: (3 - dotSize) / 2,
 						}}
 					/>
 				)}

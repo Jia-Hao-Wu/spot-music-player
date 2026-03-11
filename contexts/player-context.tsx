@@ -73,33 +73,32 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
 	const enQueue = async (track: Track) => {
 		setQueue((prev) => [...prev, track]);
+		setCurrentIndex(queue.length);
 
-		if(queue.length === 0) {
-			let streamUri = track.uri;
+		let streamUri = track.uri;
 
-			if (!streamUri && track.tidalId) {
-				setIsLoading(true);
-				try {
-					streamUri = await getTrackStream(track.tidalId);
-				} catch (e) {
-					setIsLoading(false);
-					return;
-				}
-			}
-
-			if (!streamUri) {
+		if (!streamUri && track.tidalId) {
+			setIsLoading(true);
+			try {
+				streamUri = await getTrackStream(track.tidalId);
+			} catch (e) {
 				setIsLoading(false);
 				return;
 			}
+		}
 
-			try {
-				player.replace({ uri: streamUri });
-				setWantsToPlay(true);
-			} catch (e) {
-				console.warn("Failed to load audio:", e);
-			} finally {
-				setIsLoading(false);
-			}
+		if (!streamUri) {
+			setIsLoading(false);
+			return;
+		}
+
+		try {
+			player.replace({ uri: streamUri });
+			setWantsToPlay(true);
+		} catch (e) {
+			console.warn("Failed to load audio:", e);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
