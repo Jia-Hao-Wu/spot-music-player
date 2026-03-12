@@ -5,54 +5,77 @@
  */
 
 import { apiGet } from "./client";
+import { StreamQuality } from "./track";
 
 // Types
 
 export interface ArtistMeta {
-	id: string;
+	id: number;
 	name: string;
-	picture: string | null;
-	type?: string;
+	handle?: string;
+	type: string;
+	picture?: string;
 }
 
 export interface AlbumMeta {
-	id: string;
+	id: number;
 	title: string;
-	cover: string | null;
-	releaseDate?: string;
-	numberOfTracks?: number;
-	explicit?: boolean;
-	artist: ArtistMeta;
-	artists?: ArtistMeta[];
+	cover: string;
+	vibrantColor: string;
+	videoCover?: string;
+	releaseDate: string;
 }
 
-export interface TrackInfo {
+export interface TrackMeta {
 	id: string;
 	title: string;
-	version?: string | null;
 	duration: number;
+	replayGain: number;
+	allowStreaming: boolean;
+	streamReady: boolean;
+	payToStream: boolean;
+	adSupportedStreamReady: boolean;
+	djReady: boolean;
+	stemReady: boolean;
+	streamStartDate: string;
+	premiumStreamingOnly: boolean;
+	trackNumber: number;
+	volumeNumber: number;
+	version?: string;
+	popularity: number;
+	copyright: string;
+	bpm: number;
+	key: string;
+	keyScale: string;
+	description?: string;
+	url: string;
+	isrc: string;
+	editable: boolean;
 	explicit: boolean;
-	trackNumber?: number;
-	volumeNumber?: number;
-	popularity?: number;
-	audioQuality?: string;
-	isUnavailable?: boolean;
-	previewUrl?: string | null;
+	audioQuality: string;
+	audioModes: string[];
+	mediaMetadata: StreamQuality;
+	upload: boolean;
+	accessType: string;
+	spotlighted: boolean;
 	artist: ArtistMeta;
-	artists?: ArtistMeta[];
+	artists: ArtistMeta[];
 	album: AlbumMeta;
+	dateAdded: string;
+	index: number;
+	itemUuid: string;
 }
 
 export interface AlbumDetail {
 	album: AlbumMeta;
-	items: { item: TrackInfo }[];
+	items: { item: TrackMeta }[];
 }
 
 export interface ArtistDetail extends ArtistMeta {
 	biography?: string;
 	albums?: AlbumMeta[];
 	eps?: AlbumMeta[];
-	tracks?: TrackInfo[];
+	tracks?: TrackMeta[];
 }
 
 export interface Recommendation {
@@ -64,20 +87,36 @@ export interface Recommendation {
 }
 
 export interface PlaylistDetail {
-	uuid: string;
-	title: string;
-	numberOfTracks: number;
-	description?: string;
-	image?: string;
-	squareImage?: string;
-	creator?: { id: number; name: string };
-	promotedArtists?: ArtistMeta[];
-	items: { item: TrackInfo }[];
+	version: string;
+	playlist: {
+		uuid: string;
+		title: string;
+		numberOfTracks: number;
+		numberOfVideos: number;
+		creator?: string;
+		description: string;
+		duration: number;
+		lastUpdated: string;
+		created: string;
+		type: string;
+		publicPlaylist: boolean;
+		url: string;
+		image: string;
+		popularity: number;
+		squareImage: string;
+		customImageUrl?: string;
+		promotedArtists: ArtistMeta[];
+		lastItemAddedAt: string;
+	};
+	items: {
+		type: string;
+		item: TrackMeta;
+	}[];
 }
 
 // Public API
 
-export function getTrackInfo(id: string, signal?: AbortSignal): Promise<TrackInfo> {
+export function getTrackMeta(id: string, signal?: AbortSignal): Promise<TrackMeta> {
 	return apiGet(`/info/?${new URLSearchParams({ id })}`, signal);
 }
 

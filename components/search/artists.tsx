@@ -47,7 +47,6 @@ export function Artists({ query }: ArtistsProps) {
 				</div>
 			))}
 			<div ref={sentinelRef} className="h-1" />
-			{isFetchingNextPage && <div className="text-center text-xs text-muted py-2">Loading more...</div>}
 		</div>
 	);
 }

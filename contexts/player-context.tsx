@@ -1,8 +1,4 @@
-import {
-	useAudioPlayer,
-	useAudioPlayerStatus,
-	setAudioModeAsync,
-} from "expo-audio";
+import { useAudioPlayer, useAudioPlayerStatus, setAudioModeAsync } from "expo-audio";
 
 import React, {
 	createContext,
@@ -24,8 +20,8 @@ interface PlayerContextType {
 	position: number;
 	duration: number;
 	queue: Track[];
-	setQueue: (tracks: Track[]) => void;
-	enQueue: (track: Track) => void;
+	replaceQueue: (tracks: Track[]) => Promise<void>;
+	enQueue: (track: Track) => Promise<void>;
 	play: () => Promise<void>;
 	pause: () => Promise<void>;
 	next: () => Promise<void>;
@@ -70,6 +66,41 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 			setWantsToPlay(false);
 		}
 	}, [wantsToPlay, status.isLoaded, status.playing, player, queue]);
+
+	const replaceQueue = async (tracks: Track[]) => {
+		setQueue(tracks);
+		setCurrentIndex(0);
+
+		if (tracks.length > 0) {
+			const track = tracks[0];
+
+			let streamUri = track.uri;
+
+			if (!streamUri && track.tidalId) {
+				setIsLoading(true);
+				try {
+					streamUri = await getTrackStream(track.tidalId);
+				} catch (e) {
+					setIsLoading(false);
+					return;
+				}
+			}
+
+			if (!streamUri) {
+				setIsLoading(false);
+				return;
+			}
+
+			try {
+				player.replace({ uri: streamUri });
+				setWantsToPlay(true);
+			} catch (e) {
+				console.warn("Failed to load audio:", e);
+			} finally {
+				setIsLoading(false);
+			}
+		}
+	};
 
 	const enQueue = async (track: Track) => {
 		setQueue((prev) => [...prev, track]);
@@ -139,17 +170,13 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
 	// Auto-advance when track finishes
 	useEffect(() => {
-		const subscription = player.addListener(
-			"playbackStatusUpdate",
-			(s) => {
-				if (s.playbackState === "ended" && queue.length > 0) {
-					const nextIndex =
-						(currentIndexRef.current + 1) % queue.length;
-					setCurrentIndex(nextIndex);
-					loadSoundAt(nextIndex, true);
-				}
-			},
-		);
+		const subscription = player.addListener("playbackStatusUpdate", (s) => {
+			if (s.playbackState === "ended" && queue.length > 0) {
+				const nextIndex = (currentIndexRef.current + 1) % queue.length;
+				setCurrentIndex(nextIndex);
+				loadSoundAt(nextIndex, true);
+			}
+		});
 		return () => subscription.remove();
 	}, [player, queue.length, loadSoundAt]);
 
@@ -183,16 +210,14 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 			player.seekTo(0);
 			return;
 		}
-		const prevIndex =
-			(currentIndexRef.current - 1 + queue.length) % queue.length;
+		const prevIndex = (currentIndexRef.current - 1 + queue.length) % queue.length;
 		setCurrentIndex(prevIndex);
 		await loadSoundAt(prevIndex, isPlayingRef.current);
 	}, [status.currentTime, queue.length, loadSoundAt, player]);
 
 	const seek = useCallback(
 		async (positionSeconds: number) => {
-			if (!Number.isFinite(positionSeconds) || positionSeconds < 0)
-				return;
+			if (!Number.isFinite(positionSeconds) || positionSeconds < 0) return;
 			player.seekTo(positionSeconds);
 		},
 		[player],
@@ -218,7 +243,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 				position: status.currentTime,
 				duration: status.duration,
 				queue,
-				setQueue,
+				replaceQueue,
 				play,
 				pause,
 				next,
