@@ -63,6 +63,18 @@ export interface Recommendation {
 	album: AlbumMeta;
 }
 
+export interface PlaylistDetail {
+	uuid: string;
+	title: string;
+	numberOfTracks: number;
+	description?: string;
+	image?: string;
+	squareImage?: string;
+	creator?: { id: number; name: string };
+	promotedArtists?: ArtistMeta[];
+	items: { item: TrackInfo }[];
+}
+
 // Public API
 
 export function getTrackInfo(id: string, signal?: AbortSignal): Promise<TrackInfo> {
@@ -82,6 +94,17 @@ export function getAlbumDetail(
 
 export function getArtistDetail(id: string, signal?: AbortSignal): Promise<ArtistDetail> {
 	return apiGet(`/artist/?${new URLSearchParams({ id })}`, signal);
+}
+
+export function getPlaylistDetail(
+	id: string,
+	opts: { offset?: number; limit?: number } = {},
+	signal?: AbortSignal,
+): Promise<PlaylistDetail> {
+	const params: Record<string, string> = { id };
+	if (opts.offset !== undefined) params.offset = String(opts.offset);
+	if (opts.limit !== undefined) params.limit = String(opts.limit);
+	return apiGet(`/playlist/?${new URLSearchParams(params)}`, signal);
 }
 
 export function getRecommendations(

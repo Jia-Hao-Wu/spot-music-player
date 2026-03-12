@@ -28,6 +28,7 @@ export type { StreamQuality } from "./track";
 export {
 	getAlbumDetail,
 	getArtistDetail,
+	getPlaylistDetail,
 	getRecommendations,
 	getTrackInfo
 } from "./metadata";
@@ -36,6 +37,7 @@ export type {
 	AlbumMeta,
 	ArtistDetail,
 	ArtistMeta,
+	PlaylistDetail,
 	Recommendation,
 	TrackInfo
 } from "./metadata";

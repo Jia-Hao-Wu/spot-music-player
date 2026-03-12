@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { ARTWORK_SIZES, artworkUrl } from "@/api/images";
 import { useSearchAlbums } from "@/hooks/use-search";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
@@ -10,6 +11,7 @@ export function Albums({ query }: AlbumsProps) {
 	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		useSearchAlbums(query);
 
+	const router = useRouter();
 	const sentinelRef = useInfiniteScroll(
 		() => fetchNextPage(),
 		!!hasNextPage && !isFetchingNextPage,
@@ -29,6 +31,7 @@ export function Albums({ query }: AlbumsProps) {
 				<div
 					key={album.id}
 					className="group flex flex-col items-start gap-3 p-2 bg-orange-950/50 rounded-sm overflow-visible cursor-pointer"
+					onClick={() => router.push(`/album/${album.id}`)}
 				>
 					<div className="flex rounded-md overflow-visible relative">
 						<img

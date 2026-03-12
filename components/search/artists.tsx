@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { ARTWORK_SIZES, artworkUrl } from "@/api/images";
 import { useSearchArtists } from "@/hooks/use-search";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
@@ -10,6 +11,7 @@ export function Artists({ query }: ArtistsProps) {
 	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		useSearchArtists(query);
 
+	const router = useRouter();
 	const sentinelRef = useInfiniteScroll(
 		() => fetchNextPage(),
 		!!hasNextPage && !isFetchingNextPage,
@@ -29,6 +31,7 @@ export function Artists({ query }: ArtistsProps) {
 				<div
 					key={artist.id}
 					className="group flex items-center gap-3 py-1 px-2 hover:bg-white/10 rounded-sm overflow-visible cursor-pointer"
+					onClick={() => router.push(`/artist/${artist.id}`)}
 				>
 					<div className="flex items-center flex-1 overflow-visible">
 						<span className="flex rounded-full w-12 h-12 overflow-visible mr-5 relative">

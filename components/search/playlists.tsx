@@ -1,7 +1,7 @@
+import { useRouter } from "expo-router";
 import { ARTWORK_SIZES, artworkUrl } from "@/api/images";
 import { useSearchPlaylists } from "@/hooks/use-search";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
-import { Image } from "react-native";
 
 type PlaylistsProps = {
 	query: string;
@@ -11,6 +11,7 @@ export function Playlists({ query }: PlaylistsProps) {
 	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		useSearchPlaylists(query);
 
+	const router = useRouter();
 	const sentinelRef = useInfiniteScroll(
 		() => fetchNextPage(),
 		!!hasNextPage && !isFetchingNextPage,
@@ -30,6 +31,7 @@ export function Playlists({ query }: PlaylistsProps) {
 				<div
 					key={playlist.uuid}
 					className="group flex flex-col items-start gap-3 p-2 bg-gray-800/50 rounded-sm overflow-visible cursor-pointer"
+					onClick={() => router.push({ pathname: "/playlist/[id]", params: { id: playlist.uuid, title: playlist.title, image: playlist.squareImage } })}
 				>
 					<div className="flex rounded-md overflow-visible relative">
 						<img
