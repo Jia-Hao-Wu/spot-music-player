@@ -1,3 +1,4 @@
+import { ARTWORK_SIZES, artworkUrl } from "@/api/images";
 import { useSearchAlbums } from "@/hooks/use-search";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 
@@ -21,12 +22,23 @@ export function Albums({ query }: AlbumsProps) {
 	return (
 		<div className="flex flex-col gap-2">
 			{data.items.map((album) => (
-				<div key={album.id} className="flex items-center gap-3 py-1">
-					<div className="flex-1 min-w-0">
-						<div className="text-sm text-foreground truncate">{album.title}</div>
-						{album.artists.map((artist) => (
-							<div key={artist.id} className="text-xs text-muted truncate">{artist.name}</div>
-						))}
+				<div
+					key={album.id}
+					className="group flex items-center gap-3 py-1 px-2 hover:bg-white/10 rounded-sm overflow-visible cursor-pointer"
+				>
+					<div className="flex items-center flex-1 overflow-visible">
+						<span className="flex rounded-md w-12 h-12 overflow-visible mr-5 relative">
+							<img
+								className="rounded-md transition-transform duration-200 group-hover:scale-110 group-hover:z-10"
+								src={artworkUrl(album.cover, ARTWORK_SIZES.thumbnail)}
+							/>
+						</span>
+						<div className="min-w-0">
+							<div className="text-sm text-foreground truncate">{album.title}</div>
+							<div className="text-xs text-muted truncate">
+								{album.artists.map((a) => a.name).join(", ")}
+							</div>
+						</div>
 					</div>
 				</div>
 			))}

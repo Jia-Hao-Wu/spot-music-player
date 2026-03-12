@@ -9,7 +9,8 @@ export const ARTWORK_SIZES = {
   small: 160,
   medium: 320,
   large: 640,
-  xlarge: 1280,
+  xlarge: 1080,
+  xxlarge: 1280,
 } as const;
 
 export type ArtworkSize = (typeof ARTWORK_SIZES)[keyof typeof ARTWORK_SIZES];

@@ -38,9 +38,22 @@ export interface SearchTrack {
 export interface SearchPlaylist {
 	uuid: string;
 	title: string;
-	creator: SearchCreator;
 	numberOfTracks: number;
-	squareImage: string | null;
+	numberOfVideos:number;
+	creator: SearchCreator
+	description: string;
+	duration: number;
+	lastUpdated: string;
+	created: string;
+	type: string;
+	publicPlaylist: boolean;
+	url: string;
+	image: string;
+	popularity: number;
+	squareImage: string;
+	customImageUrl?: string;
+	promotedArtists: SearchArtist[]
+	lastItemAddedAt: string;
 }
 
 export interface SearchPage<T> {
