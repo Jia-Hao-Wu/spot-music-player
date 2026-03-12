@@ -67,8 +67,42 @@ export interface TrackMeta {
 }
 
 export interface AlbumDetail {
-	album: AlbumMeta;
-	items: { item: TrackMeta }[];
+	data: {
+		id: string;
+		title: string;
+		duration: number;
+		streamReady: boolean;
+		payToStream: boolean;
+		adSupportedStreamReady: boolean;
+		djReady: boolean;
+		stemReady: boolean;
+		streamStartDate: string;
+		allowStreaming: boolean;
+		premiumStreamingOnly: boolean;
+		numberOfTracks: number;
+		numberOfVideos: number;
+		numberOfVolumes: number;
+		releaseDate: string;
+		copyright: string;
+		type: string;
+		version?: string;
+		url: string;
+		cover: string;
+		vibrantColor: string;
+		videoCover?: string;
+		explicit: boolean;
+		upc: string;
+		popularity: number;
+		audioQuality: StreamQuality;
+		audioModes: string[];
+		mediaMetadata: {
+			tags: StreamQuality[];
+		};
+		upload: boolean;
+		artist: ArtistMeta;
+		artists: ArtistMeta[];
+		items: { item: TrackMeta }[];
+	};
 }
 
 export interface ArtistDetail extends ArtistMeta {

@@ -20,7 +20,8 @@ interface PlayerContextType {
 	position: number;
 	duration: number;
 	queue: Track[];
-	replaceQueue: (tracks: Track[]) => Promise<void>;
+	currentListId?: string;
+	replaceQueue: (tracks: Track[], currentListId: string) => Promise<void>;
 	enQueue: (track: Track) => Promise<void>;
 	play: () => Promise<void>;
 	pause: () => Promise<void>;
@@ -37,6 +38,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [isLoading, setIsLoading] = useState(false);
 	const [wantsToPlay, setWantsToPlay] = useState(false);
+	const [currentListId, setCurrentListId] = useState<string>();
 
 	const player = useAudioPlayer(null);
 	const status = useAudioPlayerStatus(player);
@@ -67,9 +69,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 		}
 	}, [wantsToPlay, status.isLoaded, status.playing, player, queue]);
 
-	const replaceQueue = async (tracks: Track[]) => {
+	const replaceQueue = async (tracks: Track[], currentListId: string) => {
 		setQueue(tracks);
 		setCurrentIndex(0);
+		setCurrentListId(currentListId);
 
 		if (tracks.length > 0) {
 			const track = tracks[0];
@@ -105,6 +108,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 	const enQueue = async (track: Track) => {
 		setQueue((prev) => [...prev, track]);
 		setCurrentIndex(queue.length);
+		setCurrentListId(undefined);
 
 		let streamUri = track.uri;
 
@@ -243,6 +247,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 				position: status.currentTime,
 				duration: status.duration,
 				queue,
+				currentListId,
 				replaceQueue,
 				play,
 				pause,

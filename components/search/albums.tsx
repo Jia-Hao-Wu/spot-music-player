@@ -31,7 +31,7 @@ export function Albums({ query }: AlbumsProps) {
 				<div
 					key={album.id}
 					className="group flex flex-col items-start gap-3 p-2 bg-orange-950/50 rounded-sm overflow-visible cursor-pointer"
-					onClick={() => router.push(`/album/${album.id}`)}
+					onClick={() => router.push({ pathname: "/album/[id]", params: { id: String(album.id), title: album.title, image: album.cover } })}
 				>
 					<div className="flex rounded-md overflow-visible relative">
 						<img
