@@ -190,13 +190,13 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 		},
 		[queue, loadSoundAt],
 	);
-
+	
 	return (
 		<PlayerContext.Provider
 			value={{
 				currentIndex,
 				currentTrack: queue[currentIndex] ?? null,
-				isPlaying: status.playing,
+				isPlaying: !player.paused,
 				isLoading,
 				position: status.currentTime,
 				duration: status.duration,

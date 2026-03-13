@@ -13,8 +13,6 @@ export type TrackProps = {
 export function Track({ track, showImage = false, index }: TrackProps) {
 	const { currentTrack, isPlaying, enQueue, pause, play } = usePlayer();
 
-	console.log(track);
-
 	let artistAlbum;
 	let mainArtist = track.artist;
 
