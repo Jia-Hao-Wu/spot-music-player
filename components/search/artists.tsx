@@ -30,7 +30,7 @@ export function Artists({ query }: ArtistsProps) {
 			{data.items.map((artist) => (
 				<div
 					key={artist.id}
-					className="group flex items-center gap-3 py-1 px-2 hover:bg-white/10 rounded-sm overflow-visible cursor-pointer"
+					className="group flex items-center gap-3 py-3 px-5 hover:bg-white/10 rounded-sm overflow-visible cursor-pointer"
 					onClick={() => router.push(`/artist/${artist.id}`)}
 				>
 					<div className="flex items-center flex-1 overflow-visible">

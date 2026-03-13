@@ -129,7 +129,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 	// Auto-advance when track finishes
 	useEffect(() => {
 		const subscription = player.addListener("playbackStatusUpdate", (s) => {
-			if (s.playbackState === "ended" && queue.length > 0) {
+			if (s.didJustFinish && queue.length > 0) {
 				const nextIndex = (currentIndexRef.current + 1) % queue.length;
 				setCurrentIndex(nextIndex);
 				loadSoundAt(nextIndex, true);
