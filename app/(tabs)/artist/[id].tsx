@@ -1,18 +1,39 @@
+import { useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { getArtistDetail, getTrackStream } from "@/api";
 import { ARTWORK_SIZES, artworkUrl } from "@/api/images";
 import { usePlayer } from "@/contexts/player-context";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { getArtistTracks, getSimilarArtists } from "@/api/metadata";
+
+type Tab = "tracks" | "albums";
+
+const INITIAL_TRACKS = 5;
+const INITIAL_ALBUMS = 4;
 
 export default function ArtistPage() {
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const router = useRouter();
 	const { enQueue } = usePlayer();
+	const [activeTab, setActiveTab] = useState<Tab>("tracks");
+	const [showAllTracks, setShowAllTracks] = useState(false);
+	const [showAllAlbums, setShowAllAlbums] = useState(false);
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["artist", id],
-		queryFn: ({ signal }) => getArtistDetail(id, signal),
+		queryFn: ({ signal }) =>
+			Promise.all([
+				getArtistDetail(id, {}, signal),
+				getArtistTracks(id, {}, signal),
+				getSimilarArtists(id, {}, signal),
+			]),
+		select: ([{ artist }, { tracks, albums }, { artists: similarArtists }]) => ({
+			artist,
+			tracks,
+			albums: albums.items,
+			similarArtists,
+		}),
 		enabled: !!id,
 	});
 
@@ -24,30 +45,51 @@ export default function ArtistPage() {
 		);
 	}
 
+	const { artist, tracks, albums, similarArtists } = data;
+	const visibleTracks = showAllTracks ? tracks : tracks.slice(0, INITIAL_TRACKS);
+	const visibleAlbums = showAllAlbums ? albums : albums.slice(0, INITIAL_ALBUMS);
+
 	return (
 		<div className="flex flex-1 flex-col bg-background overflow-y-auto">
 			<div className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 bg-background/80 backdrop-blur">
 				<button onClick={() => router.back()} className="text-foreground">
 					<IconSymbol name="chevron.left" color="var(--color-foreground)" />
 				</button>
-				<span className="text-sm text-foreground font-medium truncate">{data.name}</span>
+				<span className="text-sm text-foreground font-medium truncate">
+					{artist.name}
+				</span>
 			</div>
 
 			<div className="flex flex-col items-center px-4 pb-4">
 				<img
-					src={artworkUrl(data.picture, ARTWORK_SIZES.large)}
+					src={artworkUrl(artist.picture, ARTWORK_SIZES.medium)}
 					className="w-48 h-48 rounded-full object-cover"
 				/>
 				<div className="mt-3 text-center">
-					<div className="text-base text-foreground font-medium">{data.name}</div>
+					<div className="text-base text-foreground font-medium">{artist.name}</div>
 				</div>
 			</div>
 
-			{data.tracks && data.tracks.length > 0 && (
+			<div className="flex border-b border-white/10 px-4">
+				{(["tracks", "albums"] as const).map((tab) => (
+					<button
+						key={tab}
+						onClick={() => setActiveTab(tab)}
+						className={`flex-1 py-2 text-xs font-medium uppercase text-center transition-colors ${
+							activeTab === tab
+								? "text-foreground border-b-2 border-foreground"
+								: "text-muted"
+						}`}
+					>
+						{tab === "tracks" ? `Tracks (${tracks.length})` : `Albums (${albums.length})`}
+					</button>
+				))}
+			</div>
+
+			{activeTab === "tracks" && tracks.length > 0 && (
 				<div>
-					<div className="px-4 py-2 text-xs text-muted font-medium uppercase">Top Tracks</div>
 					<div className="flex flex-col">
-						{data.tracks.map((track, index) => (
+						{visibleTracks.map((track, index) => (
 							<div
 								key={track.id}
 								className="group flex items-center gap-3 py-2 px-4 hover:bg-white/10 cursor-pointer"
@@ -55,7 +97,7 @@ export default function ArtistPage() {
 									enQueue({
 										id: track.id,
 										title: track.title,
-										artist: data.name,
+										artist: track.artist,
 										album: track.album?.title,
 										artwork: artworkUrl(track.album?.cover, ARTWORK_SIZES.thumbnail),
 										uri: await getTrackStream(track.id),
@@ -76,14 +118,21 @@ export default function ArtistPage() {
 							</div>
 						))}
 					</div>
+					{tracks.length > INITIAL_TRACKS && (
+						<button
+							onClick={() => setShowAllTracks((v) => !v)}
+							className="w-full py-2 text-xs text-muted hover:text-foreground transition-colors"
+						>
+							{showAllTracks ? "Show Less" : `Show More (${tracks.length - INITIAL_TRACKS} more)`}
+						</button>
+					)}
 				</div>
 			)}
 
-			{data.albums && data.albums.length > 0 && (
+			{activeTab === "albums" && albums.length > 0 && (
 				<div>
-					<div className="px-4 py-2 text-xs text-muted font-medium uppercase">Albums</div>
-					<div className="grid grid-cols-2 gap-2 px-4">
-						{data.albums.map((album) => (
+					<div className="grid grid-cols-2 gap-2 p-4">
+						{visibleAlbums.map((album) => (
 							<div
 								key={album.id}
 								className="group flex flex-col items-start gap-2 p-2 bg-orange-950/50 rounded-sm overflow-visible cursor-pointer"
@@ -98,9 +147,44 @@ export default function ArtistPage() {
 								<div className="min-w-0 w-full">
 									<div className="text-xs text-foreground truncate">{album.title}</div>
 									{album.releaseDate && (
-										<div className="text-[0.6rem] text-muted">{album.releaseDate.slice(0, 4)}</div>
+										<div className="text-[0.6rem] text-muted">
+											{album.releaseDate.slice(0, 4)}
+										</div>
 									)}
 								</div>
+							</div>
+						))}
+					</div>
+					{albums.length > INITIAL_ALBUMS && (
+						<button
+							onClick={() => setShowAllAlbums((v) => !v)}
+							className="w-full py-2 text-xs text-muted hover:text-foreground transition-colors"
+						>
+							{showAllAlbums ? "Show Less" : `Show More (${albums.length - INITIAL_ALBUMS} more)`}
+						</button>
+					)}
+				</div>
+			)}
+
+			{similarArtists.length > 0 && (
+				<div className="mt-4">
+					<div className="px-4 py-2 text-xs text-muted font-medium uppercase">
+						Similar Artists
+					</div>
+					<div className="flex gap-3 px-4 pb-4 overflow-x-auto">
+						{similarArtists.map((a) => (
+							<div
+								key={a.id}
+								className="flex flex-col items-center gap-2 shrink-0 cursor-pointer"
+								onClick={() => router.push(`/artist/${a.id}`)}
+							>
+								<img
+									src={artworkUrl(a.picture, ARTWORK_SIZES.thumbnail)}
+									className="w-20 h-20 rounded-full object-cover"
+								/>
+								<span className="text-xs text-foreground text-center w-20 truncate">
+									{a.name}
+								</span>
 							</div>
 						))}
 					</div>

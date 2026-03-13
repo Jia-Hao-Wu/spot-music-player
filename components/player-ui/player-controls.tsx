@@ -11,6 +11,7 @@ import {
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { usePlayer } from "@/contexts/player-context";
 import { MinMax } from "@/utils";
+import { useRouter } from "expo-router";
 
 export function PlayerControls() {
 	const {
@@ -28,6 +29,7 @@ export function PlayerControls() {
 		queue
 	} = usePlayer();
 
+	const router = useRouter();
 	const [barWidth, setBarWidth] = useState(0);
 	const [isScrubbing, setIsScrubbing] = useState(false);
 	const [scrubRatio, setScrubRatio] = useState(0);
@@ -128,7 +130,7 @@ export function PlayerControls() {
 						{currentTrack.title}
 					</Text>
 					<Text className="text-xs text-muted" numberOfLines={1}>
-						{currentTrack.artist}
+						<button	onClick={() => router.push(`/artist/${currentTrack.artist.id}`)}>{currentTrack.artist.name}</button>
 					</Text>
 				</View>
 

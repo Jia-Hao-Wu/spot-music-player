@@ -13,11 +13,9 @@ export type { ArtworkSize } from "./images";
 export { searchAlbums, searchArtists, searchPlaylists, searchTracks } from "./search";
 export type {
 	SearchAlbum,
-	SearchArtist,
 	SearchOptions,
 	SearchPage,
 	SearchPlaylist,
-	SearchTrack
 } from "./search";
 
 // Stream resolution
@@ -30,7 +28,8 @@ export {
 	getArtistDetail,
 	getPlaylistDetail,
 	getRecommendations,
-	getTrackInfo
+	getSimilarArtists,
+	getTrackMeta,
 } from "./metadata";
 export type {
 	AlbumDetail,
@@ -39,7 +38,7 @@ export type {
 	ArtistMeta,
 	PlaylistDetail,
 	Recommendation,
-	TrackInfo
+	TrackMeta,
 } from "./metadata";
 
 // Error type

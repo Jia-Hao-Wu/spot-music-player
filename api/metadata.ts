@@ -10,20 +10,21 @@ import { StreamQuality } from "./track";
 // Types
 
 export interface ArtistMeta {
-	id: number;
+	id: string;
 	name: string;
 	handle?: string;
-	type: string;
-	picture?: string;
+	type?: string;
+	picture?: string | null;
 }
 
 export interface AlbumMeta {
-	id: number;
+	id: string;
 	title: string;
 	cover: string;
 	vibrantColor: string;
 	videoCover?: string;
 	releaseDate: string;
+	numberOfTracks: number;
 }
 
 export interface TrackMeta {
@@ -105,11 +106,30 @@ export interface AlbumDetail {
 	};
 }
 
+export interface ArtistTracks {
+	version: string;
+	tracks: TrackMeta[];
+	albums: {
+		items: AlbumMeta[];
+	}
+}
+
 export interface ArtistDetail extends ArtistMeta {
-	biography?: string;
-	albums?: AlbumMeta[];
-	eps?: AlbumMeta[];
-	tracks?: TrackMeta[];
+	artist: {
+		id: string;
+		name: string;
+		artistTypes: string[];
+		url: string;
+		picture: string;
+		selectedAlbumCoverFallback?: string;
+		popularity: number;
+		artistRoles: {
+			categoryId: number;
+			category: string;
+		};
+		handle?: string;
+		spotlighted: boolean;
+	};
 }
 
 export interface Recommendation {
@@ -165,8 +185,26 @@ export function getAlbumDetail(
 	return apiGet(`/album/?${new URLSearchParams(params)}`, signal);
 }
 
-export function getArtistDetail(id: string, signal?: AbortSignal): Promise<ArtistDetail> {
-	return apiGet(`/artist/?${new URLSearchParams({ id })}`, signal);
+export function getArtistDetail(
+	id: string,
+	opts: { offset?: number; limit?: number } = {},
+	signal?: AbortSignal,
+): Promise<ArtistDetail> {
+	const params: Record<string, string> = { id };
+	if (opts.offset !== undefined) params.offset = String(opts.offset);
+	if (opts.limit !== undefined) params.limit = String(opts.limit);
+	return apiGet(`/artist/?${new URLSearchParams(params)}`, signal);
+}
+
+export function getArtistTracks(
+	id: string,
+	opts: { offset?: number; limit?: number } = {},
+	signal?: AbortSignal,
+): Promise<ArtistTracks> {
+	const params: Record<string, string> = { f: id };
+	if (opts.offset !== undefined) params.offset = String(opts.offset);
+	if (opts.limit !== undefined) params.limit = String(opts.limit);
+	return apiGet(`/artist/?${new URLSearchParams(params)}`, signal);
 }
 
 export function getPlaylistDetail(
@@ -178,6 +216,17 @@ export function getPlaylistDetail(
 	if (opts.offset !== undefined) params.offset = String(opts.offset);
 	if (opts.limit !== undefined) params.limit = String(opts.limit);
 	return apiGet(`/playlist/?${new URLSearchParams(params)}`, signal);
+}
+
+export function getSimilarArtists(
+	id: string,
+	opts: { offset?: number; limit?: number } = {},
+	signal?: AbortSignal,
+): Promise<{ artists: ArtistMeta[] }> {
+	const params: Record<string, string> = { id };
+	if (opts.offset !== undefined) params.offset = String(opts.offset);
+	if (opts.limit !== undefined) params.limit = String(opts.limit);
+	return apiGet(`/artist/similar/?${new URLSearchParams(params)}`, signal);
 }
 
 export function getRecommendations(

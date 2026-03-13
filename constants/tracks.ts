@@ -1,4 +1,4 @@
-import type { SearchTrack } from "@/api";
+import type { TrackMeta } from "@/api";
 import { ARTWORK_SIZES, artworkUrl } from "@/api";
 
 /**
@@ -11,7 +11,10 @@ import { ARTWORK_SIZES, artworkUrl } from "@/api";
 export interface Track {
 	id: string;
 	title: string;
-	artist: string;
+	artist: {
+		id: string;
+		name: string;
+	};
 	album: string;
 	artwork: string;
 	uri?: string; // populated lazily for API tracks; present for local/demo tracks
@@ -24,12 +27,14 @@ export interface Track {
  * The `uri` is intentionally left empty so the player fetches the stream
  * URL only when the track is about to play.
  */
-export function fromSearchTrack(track: SearchTrack): Track {
+export function fromSearchTrack(track: TrackMeta): Track {
 	return {
 		id: String(track.id),
 		tidalId: String(track.id),
 		title: track.title,
-		artist: track.artist?.name ?? "Unknown Artist",
+		artist: track.artist ?? {
+			name: "Unknown Artist"
+		},
 		album: track.album?.title ?? "",
 		artwork: artworkUrl(track.album?.cover, ARTWORK_SIZES.medium),
 		duration: track.duration,

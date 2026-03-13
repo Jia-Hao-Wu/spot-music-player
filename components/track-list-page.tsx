@@ -57,7 +57,10 @@ export function TrackListPage({
 								tracks.map(({ item: track }) => ({
 									id: track.id,
 									title: track.title,
-									artist: track.artist.name,
+									artist: {
+										id: track.artist.id,
+										name: track.artist.name,
+									},
 									album: track.album?.title,
 									artwork: artworkUrl(track.album?.cover, ARTWORK_SIZES.thumbnail),
 									tidalId: track.id,
@@ -86,9 +89,12 @@ export function TrackListPage({
 							enQueue({
 								id: track.id,
 								title: track.title,
-								artist: track.artist.name,
+								artist: {
+									id: track.artist.id,
+									name: track.artist.name,
+								},
 								album: track.album?.title,
-								artwork: artworkUrl(track.album?.cover, ARTWORK_SIZES.thumbnail), 
+								artwork: artworkUrl(track.album?.cover, ARTWORK_SIZES.thumbnail),
 								tidalId: track.id,
 								duration: track.duration,
 							});

@@ -1,15 +1,10 @@
 import { apiGet } from "./client";
+import { ArtistMeta, TrackMeta } from "./metadata";
 
 // Response shapes
 export interface SearchResponse<T> {
 	version: string;
 	data: T;
-}
-
-export interface SearchArtist {
-	id: string;
-	name: string;
-	picture: string | null;
 }
 
 export interface SearchCreator {
@@ -49,17 +44,7 @@ export interface SearchAlbum {
 		tags: string[];
 	};
 	upload: boolean;
-	artists: SearchArtist[]
-}
-
-export interface SearchTrack {
-	id: string;
-	title: string;
-	duration: number;
-	explicit: boolean;
-	artist: SearchArtist;
-	album: SearchAlbum;
-	audioQuality?: string;
+	artists: ArtistMeta[]
 }
 
 export interface SearchPlaylist {
@@ -79,7 +64,7 @@ export interface SearchPlaylist {
 	popularity: number;
 	squareImage: string;
 	customImageUrl?: string;
-	promotedArtists: SearchArtist[];
+	promotedArtists: ArtistMeta[];
 	lastItemAddedAt: string;
 }
 
@@ -91,9 +76,9 @@ export interface SearchPage<T> {
 }
 
 export interface SearchItems {
-	artists: SearchPage<SearchArtist>;
+	artists: SearchPage<ArtistMeta>;
 	albums: SearchPage<SearchAlbum>;
-	tracks: SearchPage<SearchTrack>;
+	tracks: SearchPage<TrackMeta>;
 	playlists: SearchPage<SearchPlaylist>;
 
 	videos: SearchPage<unknown>;
@@ -124,7 +109,7 @@ export function searchTracks(
 	query: string,
 	opts: SearchOptions = {},
 	signal?: AbortSignal,
-): Promise<SearchResponse<SearchPage<SearchTrack>>> {
+): Promise<SearchResponse<SearchPage<TrackMeta>>> {
 	return apiGet(buildPath("s", query, opts), signal);
 }
 
