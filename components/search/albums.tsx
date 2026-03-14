@@ -1,8 +1,8 @@
 import { useRouter } from "expo-router";
-import { Image, Pressable, Text, View } from "react-native";
-import { ARTWORK_SIZES, artworkUrl } from "@/api/images";
+import { Text, View } from "react-native";
 import { useSearchAlbums } from "@/hooks/use-search";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
+import { MediaCard } from "@/components/media-card";
 
 type AlbumsProps = {
 	query: string;
@@ -27,26 +27,18 @@ export function Albums({ query }: AlbumsProps) {
 	}
 
 	return (
-		<View className="flex-row flex-wrap gap-2 p-2">
+		<View className="grid grid-cols-2 gap-4 p-4">
 			{data.items.map((album) => (
-				<Pressable
+				<MediaCard
 					key={album.id}
-					className="w-[48%] flex flex-col items-start gap-3 p-2 bg-orange-950/50 rounded-sm overflow-visible"
+					className="gap-3 p-2 bg-orange-950/50"
+					image={album.cover}
+					title={album.title}
 					onPress={() => router.push({ pathname: "/album/[id]", params: { id: String(album.id), title: album.title, image: album.cover } })}
 				>
-					<View className="flex rounded-md overflow-visible relative">
-						<Image
-							source={{ uri: artworkUrl(album.cover, ARTWORK_SIZES.medium) }}
-							className="w-full aspect-square rounded-md"
-							resizeMode="contain"
-						/>
-					</View>
-					<View className="min-w-0 w-full">
-						<Text className="text-xs text-foreground" numberOfLines={1}>{album.title}</Text>
-						<Text className="text-[10px] text-muted" numberOfLines={1}>{album.artists.map((artist) => artist.name).join(", ")}</Text>
-						<Text className="text-[10px] text-muted">{album.numberOfTracks} tracks</Text>
-					</View>
-				</Pressable>
+					<Text className="text-[10px] text-muted" numberOfLines={1}>{album.artists.map((artist) => artist.name).join(", ")}</Text>
+					<Text className="text-[10px] text-muted">{album.numberOfTracks} tracks</Text>
+				</MediaCard>
 			))}
 			<View ref={sentinelRef} className="h-1" />
 		</View>

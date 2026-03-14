@@ -1,8 +1,8 @@
 import { useRouter } from "expo-router";
-import { Image, Pressable, Text, View } from "react-native";
-import { ARTWORK_SIZES, artworkUrl } from "@/api/images";
+import { Text, View } from "react-native";
 import { useSearchPlaylists } from "@/hooks/use-search";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
+import { MediaCard } from "@/components/media-card";
 
 type PlaylistsProps = {
 	query: string;
@@ -27,26 +27,18 @@ export function Playlists({ query }: PlaylistsProps) {
 	}
 
 	return (
-		<View className="flex-row flex-wrap gap-2 p-2">
+		<View className="grid grid-cols-2 gap-4 p-4">
 			{data.items.map((playlist) => (
-				<Pressable
+				<MediaCard
 					key={playlist.uuid}
-					className="w-[48%] flex flex-col items-start gap-3 p-2 bg-gray-800/50 rounded-sm overflow-visible"
+					className="gap-3 p-2 bg-gray-800/50"
+					image={playlist.squareImage}
+					title={playlist.title}
 					onPress={() => router.push({ pathname: "/playlist/[id]", params: { id: playlist.uuid, title: playlist.title, image: playlist.squareImage } })}
 				>
-					<View className="flex rounded-md overflow-visible relative">
-						<Image
-							source={{ uri: artworkUrl(playlist.squareImage, ARTWORK_SIZES.medium) }}
-							className="w-full aspect-square rounded-md"
-							resizeMode="contain"
-						/>
-					</View>
-					<View className="min-w-0 w-full">
-						<Text className="text-xs text-foreground" numberOfLines={1}>{playlist.title}</Text>
-						<Text className="text-[10px] text-muted" numberOfLines={1}>{playlist.promotedArtists.map((artist) => artist.name).join(", ")}</Text>
-						<Text className="text-[10px] text-muted">{playlist.numberOfTracks} tracks</Text>
-					</View>
-				</Pressable>
+					<Text className="text-[10px] text-muted" numberOfLines={1}>{playlist.promotedArtists.map((artist) => artist.name).join(", ")}</Text>
+					<Text className="text-[10px] text-muted">{playlist.numberOfTracks} tracks</Text>
+				</MediaCard>
 			))}
 			<View ref={sentinelRef} className="h-1" />
 		</View>

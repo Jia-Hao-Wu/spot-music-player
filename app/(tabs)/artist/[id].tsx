@@ -8,6 +8,9 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Tabs } from "@/components/ui/tabs";
 import { getArtistTracks, getSimilarArtists } from "@/api/metadata";
 import { Track } from "@/components/player-ui/track";
+import { ArtistCard } from "@/components/artist-card";
+import { MediaCard } from "@/components/media-card";
+import { ShowMore } from "@/components/ui/show-more";
 
 const INITIAL_TRACKS = 5;
 const INITIAL_ALBUMS = 4;
@@ -80,14 +83,11 @@ export default function ArtistPage() {
 								))}
 							</View>
 							{tracks.length > INITIAL_TRACKS && (
-								<Pressable
-									onPress={() => setShowAllTracks((v) => !v)}
-									className="w-full py-2 items-center"
-								>
-									<Text className="text-xs text-muted">
-										{showAllTracks ? "Show Less" : `Show More (${tracks.length - INITIAL_TRACKS} more)`}
-									</Text>
-								</Pressable>
+								<ShowMore
+									expanded={showAllTracks}
+									remaining={tracks.length - INITIAL_TRACKS}
+									onToggle={() => setShowAllTracks((v) => !v)}
+								/>
 							)}
 						</View>
 					),
@@ -96,40 +96,29 @@ export default function ArtistPage() {
 					label: `Albums (${albums.length})`,
 					content: albums.length > 0 && (
 						<View>
-							<View className="flex-row flex-wrap gap-2 px-4">
+							<View className="grid grid-cols-2 gap-4 p-4">
 								{visibleAlbums.map((album) => (
-									<Pressable
+									<MediaCard
 										key={album.id}
-										className="w-[48%] flex flex-col items-start gap-2 p-2 bg-orange-950/50 rounded-sm overflow-visible"
+										className="gap-2 p-2 bg-orange-950/50"
+										image={album.cover}
+										title={album.title}
 										onPress={() => router.push(`/album/${album.id}`)}
 									>
-										<View className="flex rounded-md overflow-visible relative">
-											<Image
-												source={{ uri: artworkUrl(album.cover, ARTWORK_SIZES.medium) }}
-												className="w-full aspect-square rounded-md"
-												resizeMode="contain"
-											/>
-										</View>
-										<View className="min-w-0 w-full">
-											<Text className="text-xs text-foreground" numberOfLines={1}>{album.title}</Text>
-											{album.releaseDate && (
-												<Text className="text-[10px] text-muted">
-													{album.releaseDate.slice(0, 4)}
-												</Text>
-											)}
-										</View>
-									</Pressable>
+										{album.releaseDate && (
+											<Text className="text-[10px] text-muted">
+												{album.releaseDate.slice(0, 4)}
+											</Text>
+										)}
+									</MediaCard>
 								))}
 							</View>
 							{albums.length > INITIAL_ALBUMS && (
-								<Pressable
-									onPress={() => setShowAllAlbums((v) => !v)}
-									className="w-full py-2 items-center"
-								>
-									<Text className="text-xs text-muted">
-										{showAllAlbums ? "Show Less" : `Show More (${albums.length - INITIAL_ALBUMS} more)`}
-									</Text>
-								</Pressable>
+								<ShowMore
+									expanded={showAllAlbums}
+									remaining={albums.length - INITIAL_ALBUMS}
+									onToggle={() => setShowAllAlbums((v) => !v)}
+								/>
 							)}
 						</View>
 					),
@@ -143,20 +132,7 @@ export default function ArtistPage() {
 					</Text>
 					<ScrollView horizontal className="px-4 pb-4" contentContainerClassName="gap-3">
 						{similarArtists.map((a) => (
-							<Pressable
-								key={a.id}
-								className="flex flex-col items-center gap-2"
-								onPress={() => router.push(`/artist/${a.id}`)}
-							>
-								<Image
-									source={{ uri: artworkUrl(a.picture, ARTWORK_SIZES.thumbnail) }}
-									className="w-20 h-20 rounded-full"
-									resizeMode="cover"
-								/>
-								<Text className="text-xs text-foreground text-center w-20" numberOfLines={1}>
-									{a.name}
-								</Text>
-							</Pressable>
+							<ArtistCard key={a.id} artist={a} />
 						))}
 					</ScrollView>
 				</View>

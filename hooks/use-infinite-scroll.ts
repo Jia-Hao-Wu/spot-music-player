@@ -1,10 +1,11 @@
 import { useEffect, useRef } from "react";
+import { View } from "react-native";
 
 export function useInfiniteScroll(
 	onLoadMore: () => void,
 	enabled: boolean,
 ) {
-	const sentinelRef = useRef<HTMLDivElement>(null);
+	const sentinelRef = useRef<View>(null);
 
 	useEffect(() => {
 		const el = sentinelRef.current;
@@ -19,7 +20,7 @@ export function useInfiniteScroll(
 			{ threshold: 0 },
 		);
 
-		observer.observe(el);
+		observer.observe(el as unknown as Element);
 		return () => observer.disconnect();
 	}, [onLoadMore, enabled]);
 
