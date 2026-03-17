@@ -42,11 +42,11 @@ export function IconSymbol({
 }: {
 	name: IconSymbolName;
 	size?: number;
-	color: string | OpaqueColorValue;
+	color?: string | OpaqueColorValue;
 	className?: string;
 	weight?: SymbolWeight;
 }) {
 	return (
-		<MaterialIcons color={color} size={size} name={MAPPING[name]} className={className} />
+		<MaterialIcons {...(color ? { color } : {})} size={size} name={MAPPING[name]} className={className} />
 	);
 }

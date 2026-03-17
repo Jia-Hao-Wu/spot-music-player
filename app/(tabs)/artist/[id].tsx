@@ -54,7 +54,7 @@ export default function ArtistPage() {
 		<ScrollView className="flex flex-1 flex-col bg-background">
 			<View className="sticky top-0 z-10 flex-row items-center gap-3 px-4 py-3 bg-background/80 backdrop-blur">
 				<Pressable onPress={() => router.back()} className="text-foreground">
-					<IconSymbol name="chevron.left" color="var(--color-foreground)" />
+					<IconSymbol name="chevron.left" className="text-foreground" />
 				</Pressable>
 				<Text className="text-sm text-foreground font-medium" numberOfLines={1}>
 					{artist.name}

@@ -24,7 +24,7 @@ export function PlayerControls() {
 		previous,
 		seek,
 		currentIndex,
-		queue,
+		length,
 	} = usePlayer();
 
 	const router = useRouter();
@@ -87,7 +87,7 @@ export function PlayerControls() {
 		}),
 	).current;
 
-	if (!currentTrack) return null;
+	if (!currentTrack) return;
 
 	const formatTime = (seconds: number) => {
 		const m = Math.floor(seconds / 60);
@@ -155,27 +155,21 @@ export function PlayerControls() {
 						<IconSymbol
 							name="backward.fill"
 							size={18}
-							color={
-								currentIndex === 0 ? "var(--color-muted)" : "var(--color-foreground)"
-							}
+							className={`text-foreground ${currentIndex === 0 ? "opacity-30" : ""}`}
 						/>
 					</TouchableOpacity>
 
 					<PausePlayButton />
 
 					<TouchableOpacity
-						disabled={currentIndex === queue.length - 1}
+						disabled={currentIndex === length - 1}
 						onPress={next}
 						hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
 					>
 						<IconSymbol
 							name="forward.fill"
 							size={18}
-							color={
-								currentIndex === queue.length - 1
-									? "var(--color-muted)"
-									: "var(--color-foreground)"
-							}
+							className={`text-foreground ${currentIndex === length - 1 ? "opacity-30" : ""}`}
 						/>
 					</TouchableOpacity>
 				</View>

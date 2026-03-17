@@ -2,7 +2,9 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import "react-native-reanimated";
+
 import "../global.css";
 
 import { PlayerProvider } from "@/contexts/player-context";
@@ -18,19 +20,23 @@ export default function RootLayout() {
 	const colorScheme = useColorScheme();
 
 	return (
-		<QueryClientProvider client={queryClient}>
-			<PlayerProvider>
-				<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-					<Stack>
-						<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-<Stack.Screen
-							name="modal"
-							options={{ presentation: "modal", title: "Modal" }}
-						/>
-					</Stack>
-					<StatusBar style="auto" />
-				</ThemeProvider>
-			</PlayerProvider>
-		</QueryClientProvider>
+		<SafeAreaProvider>
+			<QueryClientProvider client={queryClient}>
+				<PlayerProvider>
+					<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+						<SafeAreaView style={{ flex: 1 }}>
+							<Stack>
+								<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+								<Stack.Screen
+									name="modal"
+									options={{ presentation: "modal", title: "Modal" }}
+								/>
+							</Stack>
+						</SafeAreaView>
+						<StatusBar style="auto" />
+					</ThemeProvider>
+				</PlayerProvider>
+			</QueryClientProvider>
+		</SafeAreaProvider>
 	);
 }

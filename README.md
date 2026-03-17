@@ -1,13 +1,7 @@
 # hifi-music-player
 
-A hi-fi music player built with Expo and React Native. Provides search, queuing, and playback with streaming integration.
+A hi-fi music player built with Expo and React Native. Provides search, queuing, and playback with Tidal streaming integration.
 
-## Features
-
-- Search across tracks, albums, artists, and playlists
-- Audio playback with queue management and track controls
-- Infinite scroll pagination on search results
-- Streaming via Tidal integration
 
 ## Getting started
 
@@ -21,17 +15,6 @@ Start the development server:
 
 ```bash
 npx expo start
-```
-
-## Project structure
-
-```
-api/          API client, search, streaming, and metadata
-app/          File-based routing (Expo Router)
-components/   UI components, search views, player controls
-contexts/     React context providers (player state)
-hooks/        Custom hooks (search, debounce, infinite scroll)
-constants/    Theme, track types
 ```
 
 ## Legal notice

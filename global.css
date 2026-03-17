@@ -13,8 +13,7 @@
     --color-accent-2: rgba(231, 91, 91, 0.075);
   }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
+  .dark {
       --color-foreground: #fff;
       --color-background: #161616;
       --color-muted: #a3a3a3;
@@ -22,6 +21,5 @@
       --color-player-border: #1a1a1a;
       --color-accent: #d800001e;
       --color-accent-2: #0070d833;
-    }
   }
 }

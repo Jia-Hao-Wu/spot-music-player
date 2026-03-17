@@ -33,7 +33,7 @@ export function TrackListPage({
 					onPress={() => router.back()}
 					className="flex items-center justify-center"
 				>
-					<IconSymbol name="chevron.left" size={30} color="var(--color-foreground)" />
+					<IconSymbol name="chevron.left" size={30} className="text-foreground" />
 				</Pressable>
 			</View>
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Animated, View } from "react-native";
+import { Animated, Text, View } from "react-native";
 import type { TextProps } from "react-native";
 
 type MarqueeTextProps = Omit<TextProps, "children"> & {
@@ -45,21 +45,19 @@ export function MarqueeText({ text, className, ...textProps }: MarqueeTextProps)
 
 	if (!shouldScroll) {
 		return (
-			<Animated.Text {...textProps} className={className} numberOfLines={1}>
+			<Text {...textProps} className={className} numberOfLines={1}>
 				{text}
-			</Animated.Text>
+			</Text>
 		);
 	}
 
 	return (
 		<View className="overflow-hidden">
-			<Animated.Text
-				{...textProps}
-				className={className}
-				style={{ width: "200%", transform: [{ translateX }] }}
-			>
-				{text}
-			</Animated.Text>
+			<Animated.View style={{ width: "200%", transform: [{ translateX }] }}>
+				<Text {...textProps} className={className}>
+					{text}
+				</Text>
+			</Animated.View>
 		</View>
 	);
 }

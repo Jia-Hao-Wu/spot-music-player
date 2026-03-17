@@ -52,7 +52,7 @@ export function Track({ track, showImage = false, index }: TrackProps) {
 							className={`rounded-md w-12 h-12 ${currentTrack?.id === track.id ? "scale-110 z-10" : ""}`}
 							source={{ uri: artworkUrl(track.album.cover, ARTWORK_SIZES.thumbnail) }}
 						/>
-						<View className="bg-transparent rounded-md group-hover:bg-black/30 transition-colors z-20 absolute h-full w-full flex items-center justify-center">
+						<View className="bg-transparent rounded-md group-hover:bg-black/30 z-20 absolute h-full w-full flex items-center justify-center">
 							<IconSymbol
 								className="m-auto"
 								name={
@@ -69,19 +69,18 @@ export function Track({ track, showImage = false, index }: TrackProps) {
 				</View>
 			</View>
 			<View className="flex-row items-center gap-2">
-				<Text className="text-xs text-muted opacity-0 group-hover:opacity-100 transition-opacity">
+				<Text className="text-xs text-muted opacity-0 group-hover:opacity-100">
 					{Math.floor(track.duration / 60)}:
 					{(track.duration % 60).toString().padStart(2, "0")}
 				</Text>
 				{!showImage && (
 					<IconSymbol
-						className={
+						className={`text-foreground ${
 							currentTrack?.id !== track.id
-								? "opacity-0 group-hover:opacity-100 transition-opacity"
+								? "opacity-0 group-hover:opacity-100"
 								: "m-auto"
-						}
+						}`}
 						name={currentTrack?.id === track.id && isPlaying ? "pause.fill" : "play.fill"}
-						color="var(--color-foreground)"
 					/>
 				)}
 			</View>

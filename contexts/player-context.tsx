@@ -1,4 +1,9 @@
-import { useAudioPlayer, useAudioPlayerStatus, setAudioModeAsync } from "expo-audio";
+import {
+	useAudioPlaylist,
+	useAudioPlaylistStatus,
+	setAudioModeAsync,
+	AudioPlaylist
+} from "expo-audio";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import React, {
@@ -15,6 +20,17 @@ import { Track } from "@/constants/tracks";
 
 const STORAGE_KEY = "player_queue";
 
+async function resolveUri(track: Track): Promise<string | null> {
+	if (track.uri) return track.uri;
+	if (track.tidalId) {
+		try {
+			return await getTrackStream(track.tidalId);
+		} catch {
+		}
+	}
+	return null;
+}
+
 interface PlayerContextType {
 	currentIndex: number;
 	currentTrack: Track | null;
@@ -22,7 +38,7 @@ interface PlayerContextType {
 	isLoading: boolean;
 	position: number;
 	duration: number;
-	queue: Track[];
+	length: number;
 	currentListId?: string;
 	replaceQueue: (tracks: Track[], currentListId: string) => Promise<void>;
 	enQueue: (track: Track) => Promise<void>;
@@ -31,34 +47,21 @@ interface PlayerContextType {
 	next: () => Promise<void>;
 	previous: () => Promise<void>;
 	seek: (positionSeconds: number) => Promise<void>;
-	loadTrack: (track: Track) => Promise<void>;
 	toggleLoop: () => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | null>(null);
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
-	const [queue, setQueue] = useState<Track[]>([]);
-	const [currentIndex, setCurrentIndex] = useState(0);
 	const [isLoading, setIsLoading] = useState(false);
-	const [wantsToPlay, setWantsToPlay] = useState(false);
-	const [loop, setLoop] = useState(false);
 	const [currentListId, setCurrentListId] = useState<string>();
-	const [restored, setRestored] = useState(false);
+	const [trackList, setTrackList] = useState<Track[]>([]);
+	const resolvedUpTo = useRef(-1);
+	const trackListRef = useRef<Track[]>([]);
+	const queueGeneration = useRef(0);
 
-	const player = useAudioPlayer(null);
-	const status = useAudioPlayerStatus(player);
-
-	const isPlayingRef = useRef(false);
-	const currentIndexRef = useRef(0);
-
-	useEffect(() => {
-		isPlayingRef.current = status.playing;
-	}, [status.playing]);
-
-	useEffect(() => {
-		currentIndexRef.current = currentIndex;
-	}, [currentIndex]);
+	const playlist = useAudioPlaylist({ loop: "none" });
+	const status = useAudioPlaylistStatus(playlist);
 
 	useEffect(() => {
 		setAudioModeAsync({
@@ -68,208 +71,124 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 		});
 	}, []);
 
-	// Restore queue from storage on mount
-	useEffect(() => {
-		AsyncStorage.getItem(STORAGE_KEY).then((raw) => {
-			if (raw) {
-				try {
-					const {
-						queue: savedQueue,
-						currentIndex: savedIndex,
-						currentListId: savedListId,
-					} = JSON.parse(raw);
-					if (Array.isArray(savedQueue) && savedQueue.length > 0) {
-						setQueue(savedQueue);
-						setCurrentIndex(savedIndex ?? 0);
-						setCurrentListId(savedListId);
-					}
-				} catch {}
+	const resolveAndAdd = async (tracks: Track[], from: number, to: number, generation: number) => {
+		for (let i = from; i <= to && i < tracks.length; i++) {
+			if (generation !== queueGeneration.current) return;
+			if (i <= resolvedUpTo.current) continue;
+			const uri = await resolveUri(tracks[i]);
+			if (uri && generation === queueGeneration.current) {
+				playlist.add({ uri, name: tracks[i].title });
+				resolvedUpTo.current = i;
 			}
-			setRestored(true);
-		});
-	}, []);
-
-	// Persist queue to storage on changes
-	useEffect(() => {
-		if (!restored) return;
-		AsyncStorage.setItem(
-			STORAGE_KEY,
-			JSON.stringify({ queue, currentIndex, currentListId }),
-		);
-	}, [queue, currentIndex, currentListId, restored]);
-
-	// Update lock screen / notification media controls
-	useEffect(() => {
-		const track = queue[currentIndex];
-		if (!track) {
-			player.clearLockScreenControls();
-			return;
 		}
-		player.setActiveForLockScreen(true, {
-			title: track.title,
-			artist: track.artist.name,
-			albumTitle: track.album,
-			artworkUrl: track.artwork,
-		});
-	}, [player, queue, currentIndex]);
-
-	// Deferred play: wait for player to be loaded before playing
-	useEffect(() => {
-		if (wantsToPlay && status.isLoaded && !status.playing) {
-			player.play();
-			setWantsToPlay(false);
-		}
-	}, [wantsToPlay, status.isLoaded, status.playing, player, queue]);
-
-	const resolveAndLoad = useCallback(
-		async (track: Track, autoPlay: boolean) => {
-			let streamUri = track.uri;
-
-			if (!streamUri && track.tidalId) {
-				setIsLoading(true);
-				try {
-					streamUri = await getTrackStream(track.tidalId);
-				} catch {
-					setIsLoading(false);
-					return;
-				}
-			}
-
-			if (!streamUri) {
-				setIsLoading(false);
-				return;
-			}
-
-			try {
-				player.replace({ uri: streamUri });
-				if (autoPlay) {
-					setWantsToPlay(true);
-				}
-			} catch (e) {
-				console.warn("Failed to load audio:", e);
-			} finally {
-				setIsLoading(false);
-			}
-		},
-		[player],
-	);
+	};
 
 	const replaceQueue = async (tracks: Track[], listId: string) => {
+		
 		if (currentListId === listId) {
-			return !player.paused ? pause() : play();
+			return playlist.playing ? playlist.pause() : playlist.play();
 		}
 
-		setQueue(tracks);
-		setCurrentIndex(0);
+		const generation = ++queueGeneration.current;
 		setCurrentListId(listId);
+		setIsLoading(true);
+		playlist.clear();
+		resolvedUpTo.current = -1;
+		setTrackList(tracks);
+		trackListRef.current = tracks;
 
-		if (tracks.length > 0) {
-			await resolveAndLoad(tracks[0], true);
+		if (tracks.length === 0) {
+			setIsLoading(false);
+			return;
 		}
+
+		// Resolve the first track and start playing immediately
+		const firstUri = await resolveUri(tracks[0]);
+		if (!firstUri) {
+			setIsLoading(false);
+			return;
+		}
+
+		playlist.add({ uri: firstUri, name: tracks[0].title });
+		resolvedUpTo.current = 0;
+		playlist.play();
+		setIsLoading(false);
+
+		// Resolve remaining tracks in the background
+		await resolveAndAdd(tracks, 1, tracks.length - 1, generation);
 	};
 
 	const enQueue = async (track: Track) => {
-		const currentTrack = queue[currentIndex] ?? null;
+		const currentTrack = trackList[status.currentIndex] ?? null;
 
 		if (track.id === currentTrack?.id) {
-			return !player.paused ? pause() : play();
+			return playlist.playing ? playlist.pause() : playlist.play();
 		}
 
-		setQueue((prev) => [...prev, track]);
-		setCurrentIndex(queue.length);
+		const uri = await resolveUri(track);
+		if (!uri) return;
+
+		// Cancel any in-flight background resolution from replaceQueue
+		++queueGeneration.current;
+		const newIndex = playlist.trackCount;
 		setCurrentListId(undefined);
-		await resolveAndLoad(track, true);
+		// Truncate trackList to only resolved tracks so indices stay aligned
+		// with the actual playlist, then append the enqueued track
+		setTrackList((prev) => {
+			const next = [...prev.slice(0, newIndex), track];
+			trackListRef.current = next;
+			return next;
+		});
+		resolvedUpTo.current = newIndex;
+
+		playlist.add({ uri, name: track.title });
+		playlist.skipTo(newIndex);
+		playlist.play();
 	};
 
-	const loadSoundAt = useCallback(
-		async (index: number, autoPlay = false) => {
-			await resolveAndLoad(queue[index], autoPlay);
-		},
-		[queue, resolveAndLoad],
-	);
-
-	// Auto-advance when track finishes
-	useEffect(() => {
-		const subscription = player.addListener("playbackStatusUpdate", (s) => {
-			if (s.didJustFinish && queue.length > 0) {
-				const nextIndex = (currentIndexRef.current + 1) % queue.length;
-
-				if (currentIndexRef.current === queue.length - 1 && !loop) return;
-
-				setCurrentIndex(nextIndex);
-				loadSoundAt(nextIndex, true);
-			}
-		});
-		return () => subscription.remove();
-	}, [player, queue.length, loadSoundAt]);
-
-	useEffect(() => {
-		if (restored && queue.length > 0) {
-			loadSoundAt(currentIndex, false);
-		}
-	}, [restored]);
-
 	const play = useCallback(async () => {
-		if (status.isLoaded) {
-			player.play();
-		} else {
-			setWantsToPlay(true);
-		}
-	}, [player, status.isLoaded]);
+		playlist.play();
+	}, [playlist]);
 
 	const pause = useCallback(async () => {
-		setWantsToPlay(false);
-		player.pause();
-	}, [player]);
+		playlist.pause();
+	}, [playlist]);
 
 	const next = useCallback(async () => {
-		const nextIndex = (currentIndexRef.current + 1) % queue.length;
-		setCurrentIndex(nextIndex);
-		await loadSoundAt(nextIndex, isPlayingRef.current);
-	}, [queue.length, loadSoundAt]);
+		playlist.next();
+	}, [playlist]);
 
 	const previous = useCallback(async () => {
-		if (status.currentTime > 3) {
-			player.seekTo(0);
+		if (playlist.currentTime > 3) {
+			await playlist.seekTo(0);
 			return;
 		}
-		const prevIndex = (currentIndexRef.current - 1 + queue.length) % queue.length;
-		setCurrentIndex(prevIndex);
-		await loadSoundAt(prevIndex, isPlayingRef.current);
-	}, [status.currentTime, queue.length, loadSoundAt, player]);
+		playlist.previous();
+	}, [playlist]);
 
 	const seek = useCallback(
 		async (positionSeconds: number) => {
 			if (!Number.isFinite(positionSeconds) || positionSeconds < 0) return;
-			player.seekTo(positionSeconds);
+			await playlist.seekTo(positionSeconds);
 		},
-		[player],
-	);
-
-	const loadTrack = useCallback(
-		async (track: Track) => {
-			const index = queue.findIndex((t) => t.id === track.id);
-			const targetIndex = index >= 0 ? index : 0;
-			setCurrentIndex(targetIndex);
-			await loadSoundAt(targetIndex, true);
-		},
-		[queue, loadSoundAt],
+		[playlist],
 	);
 
 	const toggleLoop = useCallback(() => {
-		setLoop(previous => !previous);
-	}, []);
+		playlist.loop = playlist.loop === "none" ? "all" : "none";
+	}, [playlist]);
+
 
 	return (
 		<PlayerContext.Provider
 			value={{
-				currentIndex,
-				currentTrack: queue[currentIndex] ?? null,
-				isPlaying: !player.paused,
-				isLoading,
+				currentIndex: status.currentIndex,
+				currentTrack: trackList[status.currentIndex] ?? null,
+				isPlaying: status.playing,
+				isLoading: isLoading || status.isBuffering,
 				position: status.currentTime,
 				duration: status.duration,
-				queue,
+				length: trackList.length,
 				currentListId,
 				replaceQueue,
 				play,
@@ -277,7 +196,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 				next,
 				previous,
 				seek,
-				loadTrack,
 				enQueue,
 				toggleLoop
 			}}

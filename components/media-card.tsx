@@ -13,7 +13,7 @@ type MediaCardProps = {
 export function MediaCard({ image, title, onPress, className, children }: MediaCardProps) {
 	return (
 		<Pressable
-			className={`flex flex-col items-start rounded-sm overflow-visible ${className}`}
+			className={`flex flex-col items-start rounded-sm overflow-visible active:opacity-70 ${className}`}
 			onPress={onPress}
 		>
 			<Image

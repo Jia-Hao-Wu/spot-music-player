@@ -12,10 +12,10 @@ import { Albums } from "@/components/search/albums";
 
 export default function HomeScreen() {
 	const [query, setQuery] = useState("");
-	const tracksEndRef = useRef<(() => void) | undefined>();
-	const artistsEndRef = useRef<(() => void) | undefined>();
-	const playlistsEndRef = useRef<(() => void) | undefined>();
-	const albumsEndRef = useRef<(() => void) | undefined>();
+	const tracksEndRef = useRef<(() => void | undefined)>();
+	const artistsEndRef = useRef<(() => void | undefined)>();
+	const playlistsEndRef = useRef<(() => void | undefined)>();
+	const albumsEndRef = useRef<(() => void | undefined)>();
 
 	const handleSearch = useDebouncedCallback((text: string) => {
 		setQuery(text);
