@@ -21,7 +21,7 @@ export function MediaCard({ image, title, onPress, className, children }: MediaC
 				className="w-full aspect-square rounded-md"
 				resizeMode="cover"
 			/>
-			<View className="min-w-0 w-full">
+			<View className="min-w-0 w-full pt-2">
 				<Text className="text-xs text-foreground" numberOfLines={1}>{title}</Text>
 				{children}
 			</View>

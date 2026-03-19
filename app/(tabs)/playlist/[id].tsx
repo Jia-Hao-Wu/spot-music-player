@@ -19,7 +19,7 @@ export default function PlaylistPage() {
 
 	if (!data || isLoading) {
 		return (
-			<View className="flex items-center justify-center py-12">
+			<View className="flex-1 items-center justify-center">
 				<View className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-foreground" />
 			</View>
 		);

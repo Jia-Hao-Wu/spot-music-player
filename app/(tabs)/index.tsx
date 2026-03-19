@@ -1,21 +1,22 @@
 import { useRef, useState } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 
-import { Tabs } from "@/components/ui/tabs";
-import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
-import { Playlists } from "@/components/search/playlists";
 import { Searchbox } from "@/components/search/search-box";
-
 import { Tracks } from "@/components/search/tracks";
 import { Artists } from "@/components/search/artists";
 import { Albums } from "@/components/search/albums";
+import { Playlists } from "@/components/search/playlists";
+import { Recommended } from "@/components/home/recommended";
+import { Popular } from "@/components/home/popular";
+import { Tabs } from "@/components/ui/tabs";
+import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 
 export default function HomeScreen() {
 	const [query, setQuery] = useState("");
-	const tracksEndRef = useRef<(() => void | undefined)>();
-	const artistsEndRef = useRef<(() => void | undefined)>();
-	const playlistsEndRef = useRef<(() => void | undefined)>();
-	const albumsEndRef = useRef<(() => void | undefined)>();
+	const tracksEndRef = useRef<(() => void) | undefined>(undefined);
+	const artistsEndRef = useRef<(() => void) | undefined>(undefined);
+	const playlistsEndRef = useRef<(() => void) | undefined>(undefined);
+	const albumsEndRef = useRef<(() => void) | undefined>(undefined);
 
 	const handleSearch = useDebouncedCallback((text: string) => {
 		setQuery(text);
@@ -26,7 +27,7 @@ export default function HomeScreen() {
 			<View className="p-4">
 				<Searchbox onChangeText={handleSearch} />
 			</View>
-			{query && (
+			{query ? (
 				<Tabs
 					tabs={[
 						{
@@ -51,6 +52,11 @@ export default function HomeScreen() {
 						},
 					]}
 				/>
+			) : (
+				<ScrollView className="flex-1">
+					<Recommended />
+					<Popular />
+				</ScrollView>
 			)}
 		</View>
 	);

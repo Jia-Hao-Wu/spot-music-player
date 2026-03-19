@@ -36,7 +36,7 @@ export default function TabLayout() {
 				options={{
 					title: "Library",
 					tabBarIcon: ({ color }) => (
-						<IconSymbol size={28} name="paperplane.fill" color={color} />
+						<IconSymbol size={28} name="music.note.list" color={color} />
 					),
 				}}
 			/>
