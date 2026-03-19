@@ -12,6 +12,7 @@ import Animated, {
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { usePlayer } from "@/contexts/player-context";
 import type { Track } from "@/constants/tracks";
+import { MarqueeText } from "@/components/ui/marquee-text";
 
 const ITEM_HEIGHT = 64;
 
@@ -161,17 +162,15 @@ function QueueItem({
 					<Text className="text-xs text-muted w-6 text-right mr-2">{index + 1}</Text>
 					<Image source={{ uri: track.artwork }} className="h-10 w-10 rounded" />
 					<View className="flex-1 min-w-0 ml-3">
-						<Text
-							className={`text-sm text-foreground ${isCurrent ? "font-semibold" : ""}`}
-							numberOfLines={1}
-						>
-							{track.title}
-						</Text>
+						{isCurrent ? 
+							<MarqueeText className="text-xs" text={track.title} /> : 
+							<Text className="text-xs text-foreground" numberOfLines={1}>{track.title}</Text>
+						}
 						<Text className="text-xs text-muted" numberOfLines={1}>
 							{track.artist.name}
 						</Text>
 					</View>
-					{duration ? <Text className="text-xs text-muted">{duration}</Text> : null}
+					{duration ? <Text className="pl-2 text-xs text-muted">{duration}</Text> : null}
 					<Pressable onPress={onRemove} hitSlop={8} className="px-2">
 						<IconSymbol name="xmark" size={14} className="text-muted" />
 					</Pressable>

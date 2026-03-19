@@ -54,6 +54,8 @@ interface PlayerContextType {
 	previous: () => Promise<void>;
 	seek: (positionSeconds: number) => Promise<void>;
 	toggleLoop: () => void;
+	shuffled: boolean;
+	toggleShuffle: () => void;
 	trackList: Track[];
 	moveTrack: (fromIndex: number, toIndex: number) => Promise<void>;
 	removeTrack: (index: number) => void;
@@ -66,6 +68,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [currentListId, setCurrentListId] = useState<string>();
 	const [trackList, setTrackList] = useState<Track[]>([]);
+	const [shuffled, setShuffled] = useState(false);
 	const resolvedUris = useRef(new Map<string, string>());
 	const trackListRef = useRef<Track[]>([]);
 	const queueGeneration = useRef(0);
@@ -289,8 +292,16 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 	}, [playlist]);
 
 	const next = useCallback(async () => {
-		playlist.next();
-	}, [playlist]);
+		if (shuffled && trackListRef.current.length > 1) {
+			let rand: number;
+			do {
+				rand = Math.floor(Math.random() * trackListRef.current.length);
+			} while (rand === status.currentIndex);
+			playlist.skipTo(rand);
+		} else {
+			playlist.next();
+		}
+	}, [playlist, shuffled, status.currentIndex]);
 
 	const previous = useCallback(async () => {
 		if (playlist.currentTime > 3) {
@@ -312,6 +323,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 		playlist.loop = playlist.loop === "none" ? "all" : "none";
 	}, [playlist]);
 
+	const toggleShuffle = useCallback(() => {
+		setShuffled((v) => !v);
+	}, []);
+
 
 	return (
 		<PlayerContext.Provider
@@ -332,6 +347,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 				seek,
 				enQueue,
 				toggleLoop,
+				shuffled,
+				toggleShuffle,
 				trackList,
 				moveTrack,
 				removeTrack,

@@ -25,6 +25,8 @@ export function PlayerControls() {
 		seek,
 		currentIndex,
 		length,
+		shuffled,
+		toggleShuffle,
 	} = usePlayer();
 
 	const router = useRouter();
@@ -101,6 +103,8 @@ export function PlayerControls() {
 
 	const dotSize = isScrubbing ? 14 : 10;
 
+	const hitSlop = { top: 10, bottom: 10, left: 10, right: 10 };
+
 	return (
 		<View className="border-t border-player-border bg-player-surface">
 			<View
@@ -152,28 +156,39 @@ export function PlayerControls() {
 
 				<View className="flex-row items-center gap-3">
 					<TouchableOpacity
-						disabled={currentIndex === 0}
+						onPress={toggleShuffle}
+						hitSlop={hitSlop}
+					>
+						<IconSymbol
+							name="shuffle"
+							size={16}
+							className={shuffled ? "text-foreground" : "text-foreground opacity-30"}
+						/>
+					</TouchableOpacity>
+
+					<TouchableOpacity
+						disabled={!shuffled && currentIndex === 0}
 						onPress={previous}
-						hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+						hitSlop={hitSlop}
 					>
 						<IconSymbol
 							name="backward.fill"
 							size={18}
-							className={`text-foreground ${currentIndex === 0 ? "opacity-30" : ""}`}
+							className={`text-foreground ${!shuffled && currentIndex === 0 ? "opacity-30" : ""}`}
 						/>
 					</TouchableOpacity>
 
 					<PausePlayButton />
 
 					<TouchableOpacity
-						disabled={currentIndex === length - 1}
+						disabled={!shuffled && currentIndex === length - 1}
 						onPress={next}
-						hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+						hitSlop={hitSlop}
 					>
 						<IconSymbol
 							name="forward.fill"
 							size={18}
-							className={`text-foreground ${currentIndex === length - 1 ? "opacity-30" : ""}`}
+							className={`text-foreground ${!shuffled && currentIndex === length - 1 ? "opacity-30" : ""}`}
 						/>
 					</TouchableOpacity>
 				</View>

@@ -3,6 +3,7 @@ import { ARTWORK_SIZES, artworkUrl, getTrackStream } from "@/api";
 import { usePlayer } from "@/contexts/player-context";
 import { IconSymbol } from "../ui/icon-symbol";
 import { TrackMeta } from "@/api/metadata";
+import { MarqueeText } from "../ui/marquee-text";
 
 export type TrackProps = {
 	track: TrackMeta;
@@ -25,6 +26,8 @@ export function Track({ track, showImage = false, index }: TrackProps) {
 			: track.artist.name;
 	}
 
+	const isCurrentTrack = currentTrack?.id === track.id;
+
 	return (
 		<Pressable
 			key={track.id}
@@ -42,21 +45,21 @@ export function Track({ track, showImage = false, index }: TrackProps) {
 				})
 			}
 		>
-			<View className="flex-row items-center flex-1 min-w-0 overflow-visible">
+			<View className="flex flex-row gap-2 items-center flex-1 min-w-0 overflow-visible">
 				{index !== undefined ? (
 					<Text className="w-6 text-xs text-muted">{index + 1}</Text>
 				) : null}
 				{showImage && (
 					<View className="flex rounded-md border-none w-12 h-12 overflow-visible mr-5 relative">
 						<Image
-							className={`rounded-md w-12 h-12 ${currentTrack?.id === track.id ? "scale-110 z-10" : ""}`}
+							className={`rounded-md w-12 h-12 ${isCurrentTrack ? "scale-110 z-10" : ""}`}
 							source={{ uri: artworkUrl(track.album.cover, ARTWORK_SIZES.thumbnail) }}
 						/>
 						<View className="bg-transparent rounded-md group-hover:bg-black/30 z-20 absolute h-full w-full flex items-center justify-center">
 							<IconSymbol
 								className="m-auto"
 								name={
-									currentTrack?.id === track.id && isPlaying ? "pause.fill" : "play.fill"
+									isCurrentTrack && isPlaying ? "pause.fill" : "play.fill"
 								}
 								color="white"
 							/>
@@ -64,7 +67,7 @@ export function Track({ track, showImage = false, index }: TrackProps) {
 					</View>
 				)}
 				<View className="flex-1 min-w-0">
-					<Text className="text-sm text-foreground" numberOfLines={1}>{track.title}</Text>
+					{isCurrentTrack ?  <MarqueeText text={track.title} /> : <Text className="text-sm text-foreground" numberOfLines={1}>{track.title}</Text>}
 					<Text className="text-xs text-muted" numberOfLines={1}>{artistAlbum}</Text>
 				</View>
 			</View>
@@ -80,7 +83,7 @@ export function Track({ track, showImage = false, index }: TrackProps) {
 								? "opacity-0 group-hover:opacity-100"
 								: "m-auto"
 						}`}
-						name={currentTrack?.id === track.id && isPlaying ? "pause.fill" : "play.fill"}
+						name={isCurrentTrack && isPlaying ? "pause.fill" : "play.fill"}
 					/>
 				)}
 			</View>

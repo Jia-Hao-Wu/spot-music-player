@@ -53,8 +53,8 @@ export function MarqueeText({ text, className, ...textProps }: MarqueeTextProps)
 
 	return (
 		<View className="overflow-hidden">
-			<Animated.View style={{ width: "200%", transform: [{ translateX }] }}>
-				<Text {...textProps} className={className}>
+			<Animated.View className="w-screen" style={{ transform: [{ translateX }] }}>
+				<Text {...textProps} className={className} numberOfLines={1}>
 					{text}
 				</Text>
 			</Animated.View>
