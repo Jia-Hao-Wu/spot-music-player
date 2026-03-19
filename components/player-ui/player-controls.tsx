@@ -48,16 +48,16 @@ export function PlayerControls() {
 	const displayPosition = isScrubbing ? scrubRatio * duration : position;
 
 	const startRatioRef = useRef(0);
-	const scrubTimeout = useRef<ReturnType<typeof setTimeout>>();
+	const scrubTimeout = useRef<ReturnType<typeof setTimeout>>(null);
 
 	const panResponder = useRef(
 		PanResponder.create({
 			onStartShouldSetPanResponder: () => true,
 			onMoveShouldSetPanResponder: () => true,
-			onPanResponderGrant: () => {
+			onPanResponderGrant: (evt) => {
 				if (!barWidthRef.current) return;
 				if (scrubTimeout.current) clearTimeout(scrubTimeout.current);
-				const ratio = progressRef.current;
+				const ratio = MinMax(0, 1, evt.nativeEvent.locationX / barWidthRef.current);
 				startRatioRef.current = ratio;
 				scrubRatioRef.current = ratio;
 				setIsScrubbing(true);
@@ -107,14 +107,7 @@ export function PlayerControls() {
 
 	return (
 		<View className="border-t border-player-border bg-player-surface">
-			<View
-				onLayout={(e) => {
-					const w = e.nativeEvent.layout.width;
-					setBarWidth(w);
-					barWidthRef.current = w;
-				}}
-				{...panResponder.panHandlers}
-			>
+			<View>
 				<View className="h-[3px] overflow-hidden rounded-[2px] bg-foreground/20">
 					<View
 						className="h-full rounded-[2px] bg-foreground"
@@ -134,6 +127,16 @@ export function PlayerControls() {
 						}}
 					/>
 				)}
+
+				<View
+					onLayout={(e) => {
+						const w = e.nativeEvent.layout.width;
+						setBarWidth(w);
+						barWidthRef.current = w;
+					}}
+					{...panResponder.panHandlers}
+					className="absolute inset-0 -top-3 -bottom-3"
+				/>
 			</View>
 
 			<View className="flex-row items-center gap-[10px] px-3 py-2">
@@ -143,11 +146,9 @@ export function PlayerControls() {
 						text={currentTrack.title}
 						className="text-sm font-semibold tracking-tight text-foreground"
 					/>
-					<View className="text-xs text-muted">
-						<Pressable onPress={() => router.push(`/artist/${currentTrack.artist.id}`)}>
-							<Text>{currentTrack.artist.name}</Text>
-						</Pressable>
-					</View>
+					<Pressable onPress={() => router.push(`/artist/${currentTrack.artist.id}`)}>
+						<Text className="text-xs text-muted">{currentTrack.artist.name}</Text>
+					</Pressable>
 				</View>
 
 				<Text className="text-[11px] text-muted">

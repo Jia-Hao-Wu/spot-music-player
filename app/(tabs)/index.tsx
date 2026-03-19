@@ -25,7 +25,7 @@ export default function HomeScreen() {
 	return (
 		<View className="flex flex-1 flex-col overflow-hidden bg-background">
 			<View className="p-4">
-				<Searchbox onChangeText={handleSearch} />
+				<Searchbox onChangeText={handleSearch} placeholder="Search tracks, artists, playlists..." />
 			</View>
 			{query ? (
 				<Tabs

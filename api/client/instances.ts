@@ -1,6 +1,5 @@
 const FALLBACK_INSTANCES: string[] = [
 	"https://arran.monochrome.tf",
-	"https://us-west.monochrome.tf",
 	"https://api.monochrome.tf",
 	"https://triton.squid.wtf",
 ];

@@ -120,10 +120,20 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
 				// Resolve only the saved track so UI is available immediately
 				const savedTrack = saved.tracks[saved.currentIndex];
-				if (!savedTrack) { restoredRef.current = true; setIsLoading(false); return; }
+
+				if (!savedTrack) {
+					 restoredRef.current = true; 
+					 setIsLoading(false); 
+					 return; 
+				}
 
 				const uri = await resolveUri(savedTrack);
-				if (!uri || generation !== queueGeneration.current) { restoredRef.current = true; setIsLoading(false); return; }
+
+				if (!uri || generation !== queueGeneration.current) {
+					restoredRef.current = true;
+					setIsLoading(false); 
+					return; 
+				}
 
 				resolvedUris.current.set(savedTrack.id, uri);
 				playlist.add({ uri, name: savedTrack.title });
@@ -136,7 +146,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 				// Resolve remaining tracks in the background (after saved index first, then before)
 				await resolveAndAdd(saved.tracks, saved.currentIndex + 1, saved.tracks.length - 1, generation);
 				await resolveAndAdd(saved.tracks, 0, saved.currentIndex - 1, generation);
-			} catch {
+				
+			} catch (error) {
+				console.error(error);
 				restoredRef.current = true;
 				setIsLoading(false);
 			}
@@ -192,7 +204,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 	};
 
 	const enQueue = async (track: Track) => {
-		const currentTrack = trackList[status.currentIndex] ?? null;
+		const currentTrack = trackListRef.current[status.currentIndex] ?? null;
 
 		if (track.id === currentTrack?.id) {
 			return playlist.playing ? playlist.pause() : playlist.play();
@@ -210,23 +222,27 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 		// Cancel any in-flight background resolution
 		++queueGeneration.current;
 		restoredRef.current = true;
-
-		// Remove existing duplicate from the audio playlist
-		const existingIndex = trackListRef.current.findIndex((t) => t.id === track.id);
-		if (existingIndex !== -1 && existingIndex < playlist.trackCount) {
-			playlist.remove(existingIndex);
-		}
-
 		setCurrentListId(undefined);
 
-		setTrackList((prev) => {
-			const next = [...prev.filter((t) => t.id !== track.id), track];
-			trackListRef.current = next;
-			return next;
-		});
+		// Rebuild trackList with only resolved tracks (to stay in sync with
+		// the audio playlist) and append the new track at the end.
+		const next = [
+			...trackListRef.current.filter(
+				(t) => t.id !== track.id && resolvedUris.current.has(t.id),
+			),
+			track,
+		];
+		setTrackList(next);
+		trackListRef.current = next;
 
-		playlist.add({ uri, name: track.title });
-		playlist.skipTo(playlist.trackCount - 1);
+		// Rebuild the audio playlist so indices match trackList exactly
+		playlist.clear();
+		for (const t of next) {
+			const u = resolvedUris.current.get(t.id);
+			if (u) playlist.add({ uri: u, name: t.title });
+		}
+
+		playlist.skipTo(next.length - 1);
 		playlist.play();
 	};
 

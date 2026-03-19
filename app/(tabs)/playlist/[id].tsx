@@ -2,7 +2,7 @@ import { useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { View } from "react-native";
 import { getPlaylistDetail } from "@/api";
-import { TrackListPage } from "@/components/track-list-page";
+import { TrackListPage } from "@/components/pages/track-list-page";
 
 export default function PlaylistPage() {
 	const { id, title, image } = useLocalSearchParams<{

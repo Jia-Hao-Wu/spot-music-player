@@ -162,8 +162,8 @@ function QueueItem({
 					<Text className="text-xs text-muted w-6 text-right mr-2">{index + 1}</Text>
 					<Image source={{ uri: track.artwork }} className="h-10 w-10 rounded" />
 					<View className="flex-1 min-w-0 ml-3">
-						{isCurrent ? 
-							<MarqueeText className="text-xs" text={track.title} /> : 
+						{isCurrent ?
+							<MarqueeText className="text-xs" text={track.title} /> :
 							<Text className="text-xs text-foreground" numberOfLines={1}>{track.title}</Text>
 						}
 						<Text className="text-xs text-muted" numberOfLines={1}>

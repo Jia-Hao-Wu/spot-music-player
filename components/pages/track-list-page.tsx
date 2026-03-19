@@ -1,11 +1,11 @@
 import { useRouter } from "expo-router";
-import { Image, Pressable, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { ARTWORK_SIZES, artworkUrl } from "@/api/images";
 import { usePlayer } from "@/contexts/player-context";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import type { TrackMeta } from "@/api/metadata";
-import { Track } from "./player-ui/track";
-import { PausePlayButton } from "./player-ui/pause-play-button";
+import { Track } from "../player-ui/track";
+import { PausePlayButton } from "../player-ui/pause-play-button";
 
 type TrackListPageProps = {
 	title: string;
@@ -75,7 +75,7 @@ export function TrackListPage({
 
 			<View className="flex flex-col">
 				{tracks.map(({ item: track }, index) => (
-					<Track key={track.id} track={track} index={index} />
+					<Track key={`${track.id}-${index}`} track={track} index={index} />
 				))}
 			</View>
 		</ScrollView>
