@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	Image,
 	PanResponder,
@@ -33,6 +33,7 @@ export function PlayerControls() {
 	const [barWidth, setBarWidth] = useState(0);
 	const [isScrubbing, setIsScrubbing] = useState(false);
 	const [scrubRatio, setScrubRatio] = useState(0);
+	const [seekTarget, setSeekTarget] = useState<number | null>(null);
 
 	const barWidthRef = useRef(0);
 	const durationRef = useRef(duration);
@@ -42,13 +43,24 @@ export function PlayerControls() {
 	durationRef.current = duration;
 	seekRef.current = seek;
 
+	useEffect(() => {
+		if (seekTarget !== null && Math.abs(position - seekTarget) < 0.5) {
+			setSeekTarget(null);
+		}
+	}, [position, seekTarget]);
+
 	const progress = duration > 0 ? position / duration : 0;
 	progressRef.current = progress;
-	const displayProgress = isScrubbing ? scrubRatio : progress;
-	const displayPosition = isScrubbing ? scrubRatio * duration : position;
+	const displayProgress = isScrubbing
+		? scrubRatio
+		: seekTarget !== null && duration > 0
+			? seekTarget / duration
+			: progress;
+	const displayPosition = isScrubbing
+		? scrubRatio * duration
+		: seekTarget ?? position;
 
 	const startRatioRef = useRef(0);
-	const scrubTimeout = useRef<ReturnType<typeof setTimeout>>(null);
 
 	const panResponder = useRef(
 		PanResponder.create({
@@ -56,7 +68,7 @@ export function PlayerControls() {
 			onMoveShouldSetPanResponder: () => true,
 			onPanResponderGrant: (evt) => {
 				if (!barWidthRef.current) return;
-				if (scrubTimeout.current) clearTimeout(scrubTimeout.current);
+				setSeekTarget(null);
 				const ratio = MinMax(0, 1, evt.nativeEvent.locationX / barWidthRef.current);
 				startRatioRef.current = ratio;
 				scrubRatioRef.current = ratio;
@@ -80,15 +92,18 @@ export function PlayerControls() {
 					1,
 					startRatioRef.current + gestureState.dx / barWidthRef.current,
 				);
-				seekRef.current(ratio * durationRef.current);
-				setScrubRatio(ratio);
-				scrubTimeout.current = setTimeout(() => setIsScrubbing(false), 250);
+				const target = ratio * durationRef.current;
+				setSeekTarget(target);
+				setIsScrubbing(false);
+				seekRef.current(target);
 			},
 			onPanResponderTerminate: () => {
 				if (durationRef.current) {
-					seekRef.current(scrubRatioRef.current * durationRef.current);
+					const target = scrubRatioRef.current * durationRef.current;
+					setSeekTarget(target);
+					seekRef.current(target);
 				}
-				scrubTimeout.current = setTimeout(() => setIsScrubbing(false), 250);
+				setIsScrubbing(false);
 			},
 		}),
 	).current;

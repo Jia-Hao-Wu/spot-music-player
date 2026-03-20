@@ -1,47 +1,68 @@
 import { Image, Pressable, Text, View } from "react-native";
 import { ARTWORK_SIZES, artworkUrl, getTrackStream } from "@/api";
 import { usePlayer } from "@/contexts/player-context";
+import { useAddToPlaylist } from "@/components/add-to-playlist-modal";
 import { IconSymbol } from "../ui/icon-symbol";
-import { TrackMeta } from "@/api/metadata";
+import type { TrackMeta } from "@/api/metadata";
+import type { Track as PlayerTrack } from "@/constants/tracks";
 import { MarqueeText } from "../ui/marquee-text";
 
+function isTrackMeta(track: PlayerTrack | TrackMeta): track is TrackMeta {
+	return typeof track.album !== "string";
+}
+
 export type TrackProps = {
-	track: TrackMeta;
+	track: PlayerTrack | TrackMeta;
 	showImage?: boolean;
 	index?: number;
+	actions?: React.ReactNode;
 };
 
-export function Track({ track, showImage = false, index }: TrackProps) {
+export function Track({ track, showImage = false, index, actions }: TrackProps) {
 	const { currentTrack, isPlaying, enQueue } = usePlayer();
+	const showAddToPlaylist = useAddToPlaylist();
 
-	let artistAlbum;
+	const meta = isTrackMeta(track);
+
+	const artwork = meta
+		? artworkUrl(track.album?.cover, ARTWORK_SIZES.thumbnail)
+		: track.artwork;
+
 	let mainArtist = track.artist;
+	let artistAlbum: string;
 
-	if (!mainArtist) {
+	if (!mainArtist && meta) {
 		mainArtist = track.artists[0];
 		artistAlbum = track.artists.map((a) => a.name).join(", ");
 	} else {
-		artistAlbum = track.album?.title
-			? `${track.album.title} - ${track.artist.name}`
-			: track.artist.name;
+		const albumTitle = meta ? track.album?.title : track.album;
+		artistAlbum = albumTitle
+			? `${albumTitle} - ${mainArtist.name}`
+			: mainArtist.name;
 	}
+
+	const playerTrack: PlayerTrack = meta
+		? {
+				id: track.id,
+				title: track.title,
+				artist: mainArtist,
+				album: track.album?.title ?? "",
+				artwork,
+				tidalId: track.id,
+				duration: track.duration,
+			}
+		: track;
 
 	const isCurrentTrack = currentTrack?.id === track.id;
 
 	return (
 		<Pressable
 			key={track.id}
-			className={`group flex-row items-center gap-3 py-3 px-5 hover:bg-white/10 rounded-sm overflow-hidden ${currentTrack?.id === track.id ? "bg-accent" : ""}`}
+			className={`group flex-row items-center gap-3 py-3 px-5 hover:bg-white/10 rounded-sm overflow-hidden ${isCurrentTrack ? "bg-accent" : ""}`}
 			onPress={async () =>
 				enQueue({
-					id: track.id,
-					title: track.title,
-					artist: mainArtist,
-					album: track.album?.title,
-					artwork: artworkUrl(track.album.cover, ARTWORK_SIZES.thumbnail),
-					uri: await getTrackStream(track.id),
-					tidalId: track.id,
-					duration: track.duration,
+					...playerTrack,
+					uri: playerTrack.uri ?? (await getTrackStream(track.id)),
 				})
 			}
 		>
@@ -53,7 +74,7 @@ export function Track({ track, showImage = false, index }: TrackProps) {
 					<View className="flex rounded-md border-none w-12 h-12 overflow-visible mr-5 relative">
 						<Image
 							className={`rounded-md w-12 h-12 ${isCurrentTrack ? "scale-110 z-10" : ""}`}
-							source={{ uri: artworkUrl(track.album.cover, ARTWORK_SIZES.thumbnail) }}
+							source={{ uri: artwork }}
 						/>
 						<View className="bg-transparent rounded-md group-hover:bg-black/30 z-20 absolute h-full w-full flex items-center justify-center">
 							<IconSymbol
@@ -73,8 +94,8 @@ export function Track({ track, showImage = false, index }: TrackProps) {
 			</View>
 			<View className="flex-row items-center gap-2">
 				<Text className="text-xs text-muted opacity-0 group-hover:opacity-100">
-					{Math.floor(track.duration / 60)}:
-					{(track.duration % 60).toString().padStart(2, "0")}
+					{Math.floor((track?.duration || 0) / 60)}:
+					{((track?.duration || 0) % 60).toString().padStart(2, "0")}
 				</Text>
 				{!showImage && (
 					<IconSymbol
@@ -86,6 +107,13 @@ export function Track({ track, showImage = false, index }: TrackProps) {
 						name={isCurrentTrack && isPlaying ? "pause.fill" : "play.fill"}
 					/>
 				)}
+				<Pressable
+					hitSlop={8}
+					onPress={() => showAddToPlaylist(playerTrack)}
+				>
+					<IconSymbol name="plus" size={24} className="text-muted" />
+				</Pressable>
+				{actions}
 			</View>
 		</Pressable>
 	);

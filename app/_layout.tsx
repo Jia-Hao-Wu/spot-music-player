@@ -10,7 +10,9 @@ import "react-native-reanimated";
 import "../global.css";
 
 import { themes } from "@/constants/colors";
+import { AddToPlaylistProvider } from "@/components/add-to-playlist-modal";
 import { PlayerProvider } from "@/contexts/player-context";
+import { PlaylistStorageProvider } from "@/contexts/playlist-storage";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 const queryClient = new QueryClient();
@@ -28,18 +30,22 @@ export default function RootLayout() {
 				<View style={[{ flex: 1 }, themes[(colorScheme === "dark" ? "dark" : "light")]]}>
 					<QueryClientProvider client={queryClient}>
 						<PlayerProvider>
-							<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-								<SafeAreaView style={{ flex: 1 }}>
-									<Stack>
-										<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-										<Stack.Screen
-											name="modal"
-											options={{ presentation: "modal", title: "Modal" }}
-										/>
-									</Stack>
-								</SafeAreaView>
-								<StatusBar style="auto" />
-							</ThemeProvider>
+							<PlaylistStorageProvider>
+								<AddToPlaylistProvider>
+									<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+										<SafeAreaView style={{ flex: 1 }}>
+											<Stack>
+												<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+												<Stack.Screen
+													name="modal"
+													options={{ presentation: "modal", title: "Modal" }}
+												/>
+											</Stack>
+										</SafeAreaView>
+										<StatusBar style="auto" />
+									</ThemeProvider>
+								</AddToPlaylistProvider>
+							</PlaylistStorageProvider>
 						</PlayerProvider>
 					</QueryClientProvider>
 				</View>

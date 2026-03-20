@@ -1,11 +1,10 @@
-import { useRouter } from "expo-router";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { Image, ScrollView, Text, View } from "react-native";
 import { ARTWORK_SIZES, artworkUrl } from "@/api/images";
 import { usePlayer } from "@/contexts/player-context";
-import { IconSymbol } from "@/components/ui/icon-symbol";
 import type { TrackMeta } from "@/api/metadata";
 import { Track } from "../player-ui/track";
 import { PausePlayButton } from "../player-ui/pause-play-button";
+import { BackHeader } from "../ui/back-header";
 
 type TrackListPageProps = {
 	title: string;
@@ -22,20 +21,12 @@ export function TrackListPage({
 	image,
 	tracks,
 }: TrackListPageProps) {
-	const router = useRouter();
 	const { isPlaying, replaceQueue, currentListId } =
 		usePlayer();
 
 	return (
 		<ScrollView className="flex flex-1 flex-col bg-background">
-			<View className="sticky top-0 z-10 flex-row justify-between items-center gap-3 p-2 bg-background/80 backdrop-blur">
-				<Pressable
-					onPress={() => router.back()}
-					className="flex items-center justify-center"
-				>
-					<IconSymbol name="chevron.left" size={30} className="text-foreground" />
-				</Pressable>
-			</View>
+			<BackHeader />
 
 			<View className="flex flex-col items-center px-4 pb-4">
 				{image && (

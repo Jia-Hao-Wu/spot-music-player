@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { Image, ScrollView, Text, View } from "react-native";
 import { getArtistDetail } from "@/api";
 import { ARTWORK_SIZES, artworkUrl } from "@/api/images";
-import { IconSymbol } from "@/components/ui/icon-symbol";
+import { BackHeader } from "@/components/ui/back-header";
 import { Tabs } from "@/components/ui/tabs";
 import { getArtistTracks, getSimilarArtists } from "@/api/metadata";
 import { Track } from "@/components/player-ui/track";
@@ -52,14 +52,11 @@ export default function ArtistPage() {
 
 	return (
 		<ScrollView className="flex flex-1 flex-col bg-background">
-			<View className="sticky top-0 z-10 flex-row items-center gap-3 px-4 py-3 bg-background/80 backdrop-blur">
-				<Pressable onPress={() => router.back()} className="text-foreground">
-					<IconSymbol name="chevron.left" className="text-foreground" />
-				</Pressable>
+			<BackHeader>
 				<Text className="text-sm text-foreground font-medium" numberOfLines={1}>
 					{artist.name}
 				</Text>
-			</View>
+			</BackHeader>
 
 			<View className="flex flex-col items-center px-4 pb-4">
 				<Image
